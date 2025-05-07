@@ -1,0 +1,32 @@
+#-*-makefile-*- do not remove, it's for emacs!
+#----------------------------------------------------------------------
+# MPEG-4 Audio VM
+# makefile.ssc
+#
+# Authors:
+# AR    Aad Rijnberg, Philips Digital Systems Lab <aad.rijnberg@philips.com>
+#
+# Changes:
+# 21-jul-03   AR      initial version
+#----------------------------------------------------------------------
+
+
+# disable SSC dummy
+OBJS_ENC_SSC =
+OBJS_DEC_SSC =
+
+override DEFFLAGS +=  -DPLATFORM_LINUX_I386 -DSSC_DEC_LEVEL_MEDIUM -D_SSC_LIB_BUILD -DSSC_MP4REF_BUILD -DLOG_DISABLE -DUSE_AFSP
+
+OBJS_SSC_ENC = 
+
+OBJS_SSC_DEC = AdpcmTable.o Bits.o BitstreamParser.o Log.o Merge.o TransSynth.o SineSynth.o StereoSynth.o NoiseSynth.o SscDec.o SynthCtrl.o Window.o SSC_fft.o ct_polyphase_ssc.o ct_psdec_ssc.o hufAdpcmGrid.o hufAmpBirthRel.o hufAmpContAbs.o hufAmpSinAbs.o hufFreqBirthRel.o hufFreqContAbs.o hufFreqSinAbs.o hufAmpContRel_0.o hufAmpContRel_1.o hufAmpContRel_2.o hufAmpContRel_3.o hufFreqContRel_0.o hufFreqContRel_1.o hufFreqContRel_2.o hufFreqContRel_3.o hufNoiRelNdgE.o hufNoiRelLsfE.o hufNoiRelLag.o hufCoarseIid.o hufCoarseItd.o hufCoarseRho.o hufCoarseRhoGlobal.o hufFineIid.o hufFineItd.o hufFineRho.o hufFineRhoGlobal.o huf_s_cont.o huf_s_nrof_births.o
+
+
+# the next 4 definitions are relevant to the master makefile
+OBJS_ENC_SSC = $(OBJS_SSC_ENC)
+OBJS_DEC_SSC = $(OBJS_SSC_DEC)
+LIBS_ENC_SSC = 
+LIBS_DEC_SSC = 
+
+
+# end of makefile.ssc

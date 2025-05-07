@@ -1,0 +1,141 @@
+#-*-makefile-*- do not remove, it's for emacs!
+#----------------------------------------------------------------------
+# MPEG-4 Audio VM
+# makefile.usac
+#
+# Authors:
+# SB    Stefan Bayer, Fraunhofer IIS <stefan.bayer@iis.fraunhofer.de>
+# JL    Jeremie Lecomte, Fraunhofer IIS <jeremie.lecomte@iis.fraunhofer.de>
+#
+# Changes:
+# 20-aug-96   BG      updated version
+# 14-aug-08   SB      initial version, derived from makefile.tf
+# 31-mar-09   SB      added tw-mdct functionality to the encoder
+# 03-mar-10   JL      added FAC-fdns functionality in the encoder and decoder
+#----------------------------------------------------------------------
+# $Id: 
+
+
+# disable USAC dummy
+
+INCL += -I../mp4spatialdec/src
+
+OBJS_ENC_USAC = enc_usac.o usac_bitmux.o usac_fd_enc.o usac_fd_qc.o \
+	cod_ace_fac.o \
+	cod_lf_fac.o \
+	cod_tcx_fac.o \
+	LPD_fac.o \
+	fd_fac.o \
+	get_gain.o \
+	int_dec.o \
+	cod_main.o \
+	segsnr.o \
+	hp50.o \
+	enc_prm.o \
+	window.o\
+	usac_bits.o\
+	enc_acelp.o \
+	enc_gain.o \
+	enc_rom.o \
+	enc_util.o \
+	int_lpc.o \
+	lag_wind.o \
+	lsf_wt.o \
+	pit_fr4.o \
+	q_gain2p.o \
+	qlpc_avq.o \
+	tables_plus.o \
+	usac_cfftn.o \
+	usac_enc_lpc.o \
+	usac_tcx_mdct.o \
+	util_td.o  \
+	usac_arith_dec.o \
+	usac_tw_enc.o \
+	usac_tw_tools.o \
+	usac_mdct.o \
+	usac_windows.o \
+	vlpc_1st_cod.o \
+	vlpc_2st_cod.o \
+	vlpc_1st_dic.o \
+	re8_cod.o \
+	re8_dic.o \
+	re8_ppv.o \
+	re8_vor.o \
+	re8_dec.o \
+	savq_cod.o \
+	usac_nf.o \
+	dec_fd_fac.o \
+	usac_calcWindow.o \
+	cplx_pred.o \
+	signal_classifier.o
+
+
+
+OBJS_DEC_USAC = \
+	dec_usac.o \
+	decoder_usac.o \
+	usac_decdata.o \
+	decode_chan_ele.o \
+	usac_fd_dec.o \
+	dec_tcx_fac.o \
+	dec_LPD.o \
+	dec_ace_fac.o \
+	dec_acelp.o \
+	get_gain.o \
+	LPD_fac.o \
+	usac_td_dec.o \
+	d_gain2p.o \
+	dlpc_avq.o \
+	lsf_tab.o \
+	enc_gain.o \
+	usac_enc_lpc.o \
+	enc_util.o \
+	util_td.o \
+	hp50.o \
+	enc_rom.o \
+	tables_plus.o \
+	int_lpc.o \
+	pit_fr4.o \
+	usac_tcx_mdct.o \
+	usac_cfftn.o \
+	usac_arith_dec.o \
+	usac_tw_tools.o \
+	usac_toolsinit.o \
+	usac_imdct.o \
+	usac_tns.o \
+	usac_windows.o \
+	usac_transfo.o \
+	harmsbrWingen.o \
+	harmsbrPhasevoc.o \
+	harmsbrQmftrans.o \
+	harmsbrMathlib.o \
+	usac_bits.o \
+	re8_dec.o \
+	re8_cod.o \
+	re8_dic.o \
+	re8_ppv.o \
+	re8_vor.o \
+	savq_dec.o \
+	vlpc_1st_dec.o \
+	vlpc_1st_dic.o \
+	vlpc_2st_dec.o \
+	dec_fd_fac.o \
+	usac_calcWindow.o \
+	usac_cplx_pred.o 
+
+
+
+
+ifeq "$(TF)"  "0"
+# :TODO: add necessary files from the tf sources if TF decoder is disabled 
+OBJS_DEC_USAC += 
+	huffdec2.o  \
+	huffinit.o
+ifeq "$(SBR)" "1"
+
+endif
+endif
+
+
+#end of makefile.usac
+

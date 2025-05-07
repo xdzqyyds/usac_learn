@@ -1,0 +1,7 @@
+maplibmp4spatialdec$(LIB_SUFFIX)  = ../mp4spatialdec/
+maplibmp4spatialenc$(LIB_SUFFIX)  = ../mp4spatialenc/
+maplibeptool$(LIB_SUFFIX)         = ../epTool/
+maplibwavIO$(LIB_SUFFIX)          = ../../../../tools/wavIO
+maplibcicp2geometry$(LIB_SUFFIX)  = ../../../../tools/cicp2geometry/cicp2geometryLib
+maplibqmf$(LIB_SUFFIX)            = ../../../../tools/qmflib
+maplibmpeghisom$(LIB_SUFFIX)      = ../../../../tools/IsoLib/mpegh_in_isom

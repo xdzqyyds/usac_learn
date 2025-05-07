@@ -1,0 +1,75 @@
+/**********************************************************************
+MPEG-4 Audio VM
+LATM module tables
+
+This software module was originally developed by
+
+Toshiyuki Nomura (NEC Corporation)
+
+and edited by
+
+in the course of development of the MPEG-2 AAC/MPEG-4 Audio standard
+ISO/IEC 13818-7, 14496-1,2 and 3. This software module is an
+implementation of a part of one or more MPEG-2 AAC/MPEG-4 Audio tools
+as specified by the MPEG-2 AAC/MPEG-4 Audio standard. ISO/IEC gives
+users of the MPEG-2 AAC/MPEG-4 Audio standards free license to this
+software module or modifications thereof for use in hardware or
+software products claiming conformance to the MPEG-2 AAC/ MPEG-4 Audio
+standards. Those intending to use this software module in hardware or
+software products are advised that this use may infringe existing
+patents. The original developer of this software module and his/her
+company, the subsequent editors and their companies, and ISO/IEC have
+no liability for use of this software module or modifications thereof
+in an implementation. Copyright is not released for non MPEG-2
+AAC/MPEG-4 Audio conforming products. The original developer retains
+full right to use the code for his/her own purpose, assign or donate
+the code to a third party and to inhibit third party from using the
+code for non MPEG-2 AAC/MPEG-4 Audio conforming products. This
+copyright notice must be included in all copies or derivative works.
+
+Copyright (c) 1999.
+**********************************************************************/
+
+static int hvxctbl[2][4] = {{40, 28,  2,  0},
+			    {80, 40, 25,  3}};
+
+static int celptb1[64][6] = {{154,156,23,8,2,134}, {170,172,23,8,2,150},
+			     {186,188,23,8,2,166}, {147,149,23,8,2,127},
+			     {156,158,23,8,2,136}, {165,167,23,8,2,145},
+			     {114,116,23,8,2, 94}, {120,122,23,8,2,100},
+			     {126,128,23,8,2,106}, {132,134,23,8,2,112},
+			     {138,140,23,8,2,118}, {142,144,23,8,2,122},
+			     {146,148,23,8,2,126}, {154,156,23,8,2,134},
+			     {166,168,23,8,2,146}, {174,176,23,8,2,154},
+			     {182,184,23,8,2,162}, {190,192,23,8,2,170},
+			     {198,200,23,8,2,178}, {206,208,23,8,2,186},
+			     {210,212,23,8,2,190}, {214,216,23,8,2,194},
+			     {110,112,23,8,2, 90}, {114,116,23,8,2, 94},
+			     {118,120,23,8,2, 98}, {120,122,23,8,2,100},
+			     {122,124,23,8,2,102}, {186,188,23,8,2,166},
+			     {218,220,40,8,2,174}, {230,232,40,8,2,186},
+			     {242,244,40,8,2,198}, {254,256,40,8,2,210},
+			     {266,268,40,8,2,222}, {278,280,40,8,2,234},
+			     {286,288,40,8,2,242}, {294,296,40,8,2,250},
+			     {318,320,40,8,2,276}, {342,344,40,8,2,298},
+			     {358,360,40,8,2,314}, {374,376,40,8,2,330},
+			     {390,392,40,8,2,346}, {406,408,40,8,2,362},
+			     {422,424,40,8,2,378}, {136,138,40,8,2, 92},
+			     {142,144,40,8,2, 98}, {148,150,40,8,2,104},
+			     {154,156,40,8,2,110}, {160,162,40,8,2,116},
+			     {166,168,40,8,2,122}, {170,172,40,8,2,126},
+			     {174,176,40,8,2,130}, {186,188,40,8,2,142},
+			     {198,200,40,8,2,154}, {206,208,40,8,2,162},
+			     {214,216,40,8,2,170}, {222,224,40,8,2,178},
+			     {230,232,40,8,2,186}, {238,240,40,8,2,194},
+			     {216,218,40,8,2,172}, {160,162,40,8,2,116},
+			     {280,282,40,8,2,238}, {338,340,40,8,2,296},
+			     {  0,  0, 0,0,0,  0}, {  0,  0, 0,0,0,  0} };
+
+static int celptb2[20][4] = {{ 80, 0, 0, 0}, { 60, 0, 0, 0}, { 40, 0, 0, 0},
+			     { 20, 0, 0, 0}, {368,21, 0, 0}, {416,21, 0, 0},
+			     {464,21, 0, 0}, {496,21, 0, 0}, {284,21, 0, 0},
+			     {320,21, 0, 0}, {356,21, 0, 0}, {380,21, 0, 0},
+			     {200,21, 0, 0}, {224,21, 0, 0}, {248,21, 0, 0},
+			     {264,21, 0, 0}, {116,21, 0, 0}, {128,21, 0, 0},
+			     {140,21, 0, 0}, {148,21, 0, 0} };

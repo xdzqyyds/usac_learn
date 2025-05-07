@@ -1,0 +1,154 @@
+#-*-makefile-*- do not remove, it's for emacs!
+#----------------------------------------------------------------------
+# MPEG-4 Audio VM
+# makefile.par
+#
+#  
+#
+# Authors:
+# HP    Heiko Purnhagen, Uni Hannover <purnhage@tnt.uni-hannover.de>
+#
+# Changes:
+# 20-jun-96   HP    first version
+# 28-jun-96   HP    added HVXC
+# 05-jul-96   HP    added hvxc_dmy.c option (disable hvxc by: make PAR=IL)
+# 26-aug-96   HP    CVS
+# 12-sep-96   HP    incorporated indiline modules as source code
+#                   make IL_PSY=DMY -> dummy psychoacoustic model for indiline
+# 26-sep-96   HP    new indiline module interfaces
+# 26-sep-96   HP    incorporated changes by Sony IPC
+# 25-oct-96   HP    adapted makefile options
+# 31-jan-97   HP    IL dec does not need uhd_fft
+# 05-feb-97   HP    HVXC dec does not need libHVXC.a
+# 18-jul-97   HP    libHVXC removed, hvxc needs att_pc2lsf.c from src_lpc_enc
+# 29-aug-97   NT    added modified LSP encoder/decoder modules
+# 12-nov-97   NT    revised for new LPC tools
+# 31-mar-98   HP    added libindilinextr.a
+# 22-jan-99   HP    HVXC_POST
+# 05-feb-99   HP    marked HILN as Version 2
+#
+# VMIL stuff
+# 27-feb-97   HP    added ilxenv.o
+# 05-mar-97   HP    added ilxline.o ilxharm.o
+# 23-apr-97   BE    added uhd_fft.o for decoder
+# 09-jun-97   HP    IL_PARAFILE
+# 13-nov-97   HP/BE added HILN_BASIC
+#----------------------------------------------------------------------
+
+
+# makefile.par options:
+# PAR_HVXC=1    Sony IPC HVXC mode enabled
+#         =0    Sony IPC HVXC mode disabled
+# HILN_ADVA=1   advanced HILN encoder mode
+#          =0   basic HILN encoder mode (source code with ISO-(c))
+# HVXC_POST=1   use optimised HVXC postfiler (library)
+#          =0   use default HVXC postfiler (source code)
+
+# defaults:
+ifndef PAR_HVXC
+PAR_HVXC = 1
+endif
+ifndef HILN_ADVA
+HILN_ADVA = 0
+endif
+ifndef HVXC_POST
+HVXC_POST = 0
+endif
+
+# disable PAR dummy
+OBJS_ENC_PAR =
+OBJS_DEC_PAR =
+
+OBJS_ENC_PAR +=	enc_par.o
+OBJS_DEC_PAR +=	dec_par.o
+
+ifeq "$(VERSION)" "2"
+# UHD HILN mode
+LIBS_ENC_PAR +=
+LIBS_DEC_PAR +=
+OBJS_ENC_PAR +=	indilinecom.o indilineqnt.o indilineenc.o uhd_fft.o
+ifeq "$(HILN_ADVA)" "1"
+LIBS_ENC_PAR += -lindilinextr
+else
+OBJS_ENC_PAR += indilinextr_basic.o
+endif
+OBJS_DEC_PAR +=	indilinecom.o indilineqnt.o indilinesyn.o indilinedec.o\
+		uhd_fft.o
+
+ifeq "$(PAR_ILPSY)" "1"
+# IL mode: UHD advanced psychoacoustic model
+ifeq "$(PPM)" "1" 
+LIBS_ENC_PAR +=	-luhd_ppm
+else
+LIBS_ENC_PAR +=	-luhd_psy
+endif
+else
+# IL mode: basic psychoacoustic model
+OBJS_ENC_PAR +=	uhd_psy_basic.o
+endif
+
+ifeq "$(IL_PARAFILE)" "1"
+OBJS_ENC_PAR +=	uhd_parafile.o
+OBJS_DEC_PAR +=	uhd_parafile.o
+endif
+endif
+
+ifeq "$(PAR_HVXC)" "1"
+# IPC HVXC mode
+LIBS_ENC_PAR +=
+LIBS_DEC_PAR +=
+OBJS_ENC_PAR +=	hvxcCommon.o hvxcEnc.o \
+                hvxcFExtEnc.o \
+                hvxcFPExtEnc.o \
+                hvxcFltEnc.o \
+                hvxcLpcAnaEnc.o \
+                hvxcPWEnc.o \
+                hvxcPchEnc.o \
+                hvxcQAmEnc.o \
+		hvxcQLspEnc.o \
+                hvxcVUVEnc.o \
+                hvxcVxcEnc.o 
+OBJS_DEC_PAR +=	hvxcCommon.o hvxcDec.o\
+		hvxcItpDec.o hvxcQAmDec.o hvxcQLspDec.o\
+		hvxcSynUVDec.o hvxcSynVDec.o hvxcUVExtGenDec.o\
+		hvxcVExtGenDec.o hvxcVxcDec.o
+
+
+ifeq "$(VERSION)" "2"
+# module for EP tool (YM 990616)
+OBJS_ENC_PAR +=	hvxcProtect.o
+OBJS_DEC_PAR +=	hvxcProtect.o
+endif
+
+ifeq "$(HVXC_POST)" "1"
+#Modified PostFilter nishi 980528
+LIBS_DEC_PAR += -lhvxcFltDecIp
+else
+#Original PostFilter
+OBJS_DEC_PAR += hvxcFltDec.o
+endif
+
+ifeq "$(LPC)" "0"
+# HP 970718 971023 20000112
+OBJS_ENC_PAR +=	phi_lpc.o pan_lspqtz2_dd.o pan_stab.o pan_sort.o\
+		att_pc2lsf.o att_testbound.o phi_lsfr.o\
+		att_lsf2pc.o pan_lspdec.o phi_priv.o
+ifeq "$(VERSION)" "2"
+OBJS_ENC_PAR +=	nec_vad.o nec_cng_lspvq.o
+endif
+OBJS_DEC_PAR +=	pan_lspdec.o pan_stab.o pan_sort.o
+endif
+
+else
+# IPC HVXC dummy
+OBJS_ENC_PAR +=	hvxcEnc_dmy.o
+OBJS_DEC_PAR +=	hvxcDec_dmy.o
+ifeq "$(LPC)" "0"
+# HP 971111
+OBJS_ENC_PAR +=	hvxc_lpc_dmy.o
+OBJS_DEC_PAR +=	hvxc_lpc_dmy.o
+endif
+endif
+
+# end of makefile.par
+

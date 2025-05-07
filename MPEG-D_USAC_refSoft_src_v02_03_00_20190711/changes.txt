@@ -1,0 +1,429 @@
+2008-10-08: RM0 Initial revision
+________________________________
+
+ - no notes
+
+
+2008-10-17:
+___________
+
+- Bug fixes
+  - Decoder
+    . fix fixing possible memory corruption writing out Wave-Files containig a 32bit IEEE float audio sample representation (option “–float? (mpegD_usac/usacEncDec/src_frame/austream.c, fuction AuWriteDataFloat(), l. 506ff)
+    . fix for un-initialized variable in case noise-filling not used (mpegD_usac/usacEncDec/src_usac/usac_arith_dec.c, function acSpecFrame(), l. 303)
+
+  - Encoder
+    . fix Windows Workspaces (removed restriction to 44.1/48.0 kHz sampling rate)(Win32 only)
+    . add support for exceptional sampling rates (e.g. 28.8 kHz)
+
+________________________________________________________________________________
+
+
+2009-01-28: m16153
+__________________
+
+- Bug fixes
+  - Decoder
+    . fix Harmonic SBR Time Alignment and Transitions
+    . fix in SBR decoder (Array Overflow in mpegD_usac/usacEncDec/src_tf/ct_envextr.c)
+
+  - Encoder/Decoder
+    . fix Bitstream Signaling for Harmonic SBR Tool, if SBR is not present
+    . fix regarding transition between FD/LPD frames (can be disabled by setting the preprocessor define 'TRANSITION_FD_LPD_NO_BUGFIX')
+    . fix regarding Harmonic SBR Stretching Factor (can be disabled by setting the preprocessor define USAC_RM0_PATCHSCALE_NO_BUGFIX)
+    . fix regarding TW-MDCT resampling buffer length adjustment (can be disabled by setting the preprocessor define RM0_TW_DELAY_NO_BUGFIX)
+    . fix concerning misc. TW-MDCT issues (can be disabled by setting the preprocessor define TW_MISC_NO_BUGFIX)
+    . add Support for low samplingrates in MPEG Surround (< 27713 Hz)
+
+________________________________________________________________________________
+
+
+2009-03-03: w10418
+__________________
+
+- Bug fixes
+  - Encoder/Decoder
+    . fix regarding transition between FD/LPD frames (can be disabled by setting the preprocessor define 'TRANSITION_FD_LPD_NO_BUGFIX')
+    . add integration of Updated set of arithmetic coder tables (can be reverted by setting the preprocessor define USAC_NO_ARITH_TABLES_CE)
+
+________________________________________________________________________________
+
+
+2009-04-15: m16321
+__________________
+
+- Bug fixes
+  - Decoder
+    . add the support of the delay compensation in the LPD domain decoding branch if the time warped filter bank is active
+    . Unifiying the inverse MDCT functions
+
+  - Encoder
+    . Integration of the time warped filter processing, including a simple control mechanism
+
+  - Encoder/Decoder
+    . Addition the missing reset of the time warped states when the preceding frame was coded by the LPD domain coder
+
+________________________________________________________________________________
+
+
+2009-05-06: m16376
+__________________
+
+- Bug fixes
+  - Decoder
+    . add Phase decoding in MPEG Surround.
+    . fix regarding the bitstream syntax and the phase synthesis in MPEG Surround (can be disabled by setting the preprocessor define 'PHASE_NO_BUGFIX' which reverts to the status of Phase CE submission)
+
+  - Encoder
+    . add bitstream signaling for Phase coding in MPEG Surround.
+    . add IPD encoding module.
+
+________________________________________________________________________________
+
+
+2009-05-18: m16316
+__________________
+
+- Bug fixes
+  - Encoder
+    . add bitstream signaling for AVQ-based LPC quantizer in LPD mode.
+
+  - Decoder
+    . Integration of the AVQ-based LPC quantizer in the LPD mode.
+      The following files were affected:
+      In directory ./mpeg4audio/mp4AudVm_Rewrite/src_usac:
+           Modified    ci          cnst.h
+           Modified    ci          consts.h
+           Modified    ci          dec_ace.c
+           Modified    ci          dec_lf.c
+           Added       ci          dlpc_avq.c
+           Removed     ci          dlpc_saac.c
+           Modified    ci          int3gpp.h
+           Modified    ci          int_lpc.c
+           Removed     ci          isf_tab.c
+           Removed     ci          isf_tab.h
+           Removed     ci          isp_isf.c
+           Added       ci          lsf_tab.c
+           Modified    ci          proto_func.h
+           Added       ci          re8.h
+           Added       ci          re8_cod.c
+           Added       ci          re8_dec.c
+           Added       ci          re8_dic.c
+           Added       ci          re8_ppv.c
+           Added       ci          re8_vor.c
+           Added       ci          savq_dec.c
+           Modified    ci          table_decl.h
+           Modified    ci          tables_plus.c
+           Modified    ci          td_frame.h
+           Modified    ci          usac_elements.h
+           Modified    ci          usac_enc_lpc.c
+           Modified    ci          usac_mainStruct.h
+           Modified    ci          usac_td_dec.c
+           Added       ci          vlpc_1st_dec.c
+           Added       ci          vlpc_1st_dic.c
+           Added       ci          vlpc_2st_dec.c
+
+      In directory ./mpeg4audio/mp4AudVm_Rewrite/src_usac_enc:
+           Modified    ci          cod_lf_amrwb_plus.c
+           Modified    ci          cod_main.c
+           Modified    ci          cod_tcx.c
+           Modified    ci          enc_prm.c
+           Added       ci          qlpc_avq.c
+           Removed     ci          qlpc_saac.c
+           Removed     ci          qpisf_saac.c
+           Added       ci          savq_cod.c
+           Added       ci          vlpc_1st_cod.c
+           Added       ci          vlpc_2st_cod.c
+
+      In directory ./mpeg4audio/mp4AudVm_Rewrite/win32/mp4v2dec:
+           Modified    ci          objs_dec_usac.dsp
+
+      In directory ./mpeg4audio/mp4AudVm_Rewrite/win32/mp4v2enc/obj_usac_enc:
+           Modified    ci          obj_usac_enc.dsp
+
+________________________________________________________________________________
+
+
+2009-08-14: m16666, m16669, m16686
+__________________________________
+
+- Bug fixes
+  - Correction to the Bass-Postfilter according to m16669
+  - Changes in MPEG Surround Bitstream Syntax according to m16666
+  - removal of blending between harmonic transpoition and regular eSBR scheme and explicit signaling of patchingMode according to m16686
+
+________________________________________________________________________________
+
+
+2009-12-07: N11040
+__________________
+
+- Bug fixes
+  - Integration of Unified Stereo functionality according to m16921
+  - Corrections regarding the handling of 1152 transition frames according to m16996
+  - Corrections regarding correct handling of USAC bitstreams without eSBR according to m16996
+  - Corrections regarding wrong initialization of deaultCld for bsTreeConfig == 0 according to m16996
+  - Various fixes for the harmonic transposer in the sSBR module, namely
+    . time-aligment of different harmonic contributions
+    . Modeling of bandpass filters in harmonic SBR
+    . Calculation of maximum stretching factor
+    . SBR limiter adjustment according to m16996 and m16988
+
+________________________________________________________________________________
+
+
+2010-03-12: N11215
+__________________
+
+- Bug fixes
+  - Integration of MPE 2-1-2 time alignment (m17253)
+  - Integration of full CPE decoding capabilities (m17253)
+  - Intergration of IPD sign change (m17227)
+  - Corrections to Unified Stereo: Decorrelation/residual sign change (m17278)
+  - Integration of CE on Harmonic Transposer (m17166)
+  - Integration of CE on Unification of Windowing and Transitions (m17167)
+  - Encoder only: Integration of Noise-Filling module (m17153)
+
+________________________________________________________________________________
+
+
+2010-03-19: N11215
+__________________
+
+- Bug fixes
+  - Decoder
+    . fix decoder on Unification of Windowing and Transitions in combination with time-warped MDCT
+
+  - Encoder
+    . fix solving problems in switched mode
+    . fix MPS 2-1-2 ICC Quantizer and ICC parameter estimation (m17292)
+
+________________________________________________________________________________
+
+
+2010-05-15: N11313
+__________________
+
+- Bug fixes
+  - Corrections to FAC processing (m17481)
+  - Corrections to eSBR bandpass filters (m17481)
+  - Corrections to Unified Stereo Coding (m17557)
+
+________________________________________________________________________________
+
+
+2010-10-06: N11510
+__________________
+
+- Bug fixes
+  - FAC processing in CPEs (m17816)
+  - Correction of window sequence selections (m17816)
+  - Corrections to Phase Coding in MPS 2-1-2 (m17792)
+  - Integration of Improved Noiseless Coding CE (m17558, m17865)
+  - Integration of Improvements to Low Bitrate Stereo Coding CE (m17494)
+  - Integration of Improved Stereo Coding at Higher Bitrates CE (m17825)
+  - Integration of Inter-eTes technology (m17502)
+
+________________________________________________________________________________
+
+
+2011-01-20: N11659
+__________________
+
+- Bug fixes
+  - Corrections regarding QMF filterbank in case of unified stereo (m18456)
+  - Recalculation of of pitch gain for bass-postfilter in case of TCX-ACELP transitions (m18456)
+  - Simplification of AVQ bitstream syntax (m18456)
+  - Integration of CE on complexity reduction of USAC time warping (m18452)
+  - Integration of CE on improved bass postfilter (m18379)
+  - Integration of CE on improved SBR (m18378)
+  - Integration of CE on improved harmonic transposer in USAC (m18384)
+
+________________________________________________________________________________
+
+
+2011-03-20: N11863
+__________________
+
+- Bug fixes
+  - Corrections according to (m19319)
+  - Corrections for cross-prooducts in harmonic transposer (m19298)
+  - CE on Low-complexity MPS212 decorrelator (m19314)
+  - CE on QMF based harmonic transposer (m18386, m18384, m19301)
+  - CE on SBR 4:1 System (m19328)
+  - CE on SBR PVC Coding Scheme (m19256)
+  - CE on MPS212 Transient Steering Decorrelator (m19311)
+  - CE on Alternative core-coder framelength (m19330)
+  - Bitstream Redesign (independency flag, MPS212, according to m19337)
+
+________________________________________________________________________________
+
+
+2011-07-04: N12013
+__________________
+
+- Bug fixes
+  - Corrections according to (m20034)
+  - Corrections to PVC (m20006)
+  - Bitstream revision (m20069)
+  - Adaptive T/F postprocessing as informative tool (m20050)
+
+________________________________________________________________________________
+
+
+2011-09-30: N12231
+__________________
+
+- Bug fixes
+  - Corrections according to (m20389, m21260)
+  - Editlist-Support (m21216)
+
+________________________________________________________________________________
+
+
+2012-06-29: N12809
+__________________
+
+- Bug fixes
+  - Bring in line with software snapshot attached to PDAM2 of USAC (N12809)
+  - Corrections and additions according to (m24862)
+
+________________________________________________________________________________
+
+
+2015-03-12: N14921 (Amd.2/COR 1)
+________________________________
+
+- Bug fixes
+  - In transitions from ACELP to FD core the wrong LPC filter coefficients are used.
+    Preprocessor define to deactivate: USAC_REFSOFT_COR1_NOFIX_01 (M33186 [3.1])
+  - Fixes invalid read.
+    Preprocessor define to deactivate: USAC_REFSOFT_COR1_NOFIX_02 (N14059 [3.3])
+  - Down-mix calculation for previous frame has to consider prediction direction of current frame.
+    Preprocessor define to deactivate: USAC_REFSOFT_COR1_NOFIX_03 (N14059 [3.1], M34226 [2.1])
+  - Rounding inaccuracies yield incorrect sampling frequency in case of 768 output frame length.
+    Preprocessor define to deactivate: USAC_REFSOFT_COR1_NOFIX_04 (N14059 [3.2])
+  - Infinite loop in eSBR patch construction.
+    Preprocessor define to deactivate: USAC_REFSOFT_COR1_NOFIX_05 (M34226 [3.1])
+  - Transitions from FD to LPD coding mode.
+    Preprocessor define to deactivate: USAC_REFSOFT_COR1_NOFIX_06 (M34226 [3.2])
+  - Update of QMF analysis buffer.
+    Preprocessor define to deactivate: USAC_REFSOFT_COR1_NOFIX_07 (M34226 [2.2])
+  - Use of undefined memory by Bass Postfilter.
+    Preprocessor define to deactivate: USAC_REFSOFT_COR1_NOFIX_08 (M34882 [3.2])
+  - Activation of Bass Postfilter for FAC area.
+    Preprocessor define to deactivate: USAC_REFSOFT_COR1_NOFIX_09 (M34882 [3.1])
+
+________________________________________________________________________________
+
+
+2018-01-17: Edition 2.0
+_______________________
+
+- Maintenance
+  - rewrite of usacDec
+    . usacDec implements the framework of the USAC decoder featuring:
+      + DRC as defined in AMD3
+      + executable handling
+    . redefine command line parameters
+    . update help according to new command line parameters
+  - add error handling and sanity checks to the decoder
+  - remove multiple compiler warnings
+  - add compile system to build the software on:
+    . Windows: Visual Studio 2008. Visual Studio 2012 -> compile.bat
+    . Unix: Linux, Darwin -> compile.sh
+  - update readme.txt
+
+- Modules
+  - add new required modules
+    . add tools/IsoLib (placeholder for MPEG-4 Part 12 libisomediafile library)
+    . add wavCutter
+    . add wavIO
+  - remove AFsp library, download link is provided in readme.txt
+
+- Bug fixes
+  - usacDec
+    . fix HBE processing in case stereoConfigIndex equals 2
+    . fix previous window shape for complex prediction
+    . fix MPS212 data access
+    . fix inconsistent data types
+  - usacEnc
+    . fix the embedding of the fill element
+    . fix bit reservoir calculation
+    . fix out-of-bounds exception in the resampling stage
+
+________________________________________________________________________________
+
+
+2018-04-11: Edition 2.1
+_______________________
+
+- Maintenance
+  - usacDec/usacEnc
+    . integration of Immediate Playout Frames (IPF) as described in AMD3
+    . integration of the Stream Identifier as described in AMD4
+  - usacDec
+    . enabled specification of target loudness and DRC effect type directly via
+      the drcToolDecoder interface
+    . added possibility to run usacDec in a stand-alone mode, by omitting the
+      calling of additional executables
+  - usacEnc
+    . enabled signalling of stream access points and roll sampels
+    . adapted handling of the encoder delay with regard to the writing of IPFs
+  - removal of the ISOBMFF reference software
+  - improved error handling
+  - removed several compiler warnings
+  - adapted code style to improve readability
+  - general clean-up of unused code
+
+- Bug fixes
+  - usacDec
+    . fixed segmentation fault due to invalid out-of-bounds memory access within SBR
+    . fixed segmentation fault due to access of an invalid bitstream handle
+    . fixed decoding of multichannel bitstreams
+    . fixed decoding of bitstreams with channelConfiguration 0
+    . fixed decoder delay for bitstreams with SBR 4:1 and stereoConfigIndex 3
+  - usacEnc
+    . fixed writing of the sample duration in case SBR is utilized
+    . fixed estimation of required SBR bits
+    . fixed estimation of required SBR bits for multiple elements
+
+________________________________________________________________________________
+
+
+2018-07-11: Edition 2.2
+_______________________
+
+- Maintenance
+  - set version number to 2.2
+  - usacEnc
+    . integration of MPEG-D DRC encoder as defined in AMD3
+      + added executable handling functionality
+      + added example input files
+    . redefine command line parameters and restructuring of command line parameter handling
+    . update help according to new command line parameters
+  - removed several compiler warnings
+  - adapted code style to improve readability
+  - general clean-up of unused code
+
+- Bug fixes
+  - usacDec
+    . fixed the LPC filter handling for FAC
+
+________________________________________________________________________________
+
+
+2019-01-17: Edition 2.3
+_______________________
+
+- Maintenance
+  - set version number to 2.3
+  - removed compiler warnings
+
+- Bug fixes
+  - usacDec
+    . unambiguous handling of OTT IPD values in dec_ace_fac.c
+    . added check to ensure complete parsing of one access unit in decoder_usac.c
+
+- Tools
+  - add SSNRCD audio conformance verification tool

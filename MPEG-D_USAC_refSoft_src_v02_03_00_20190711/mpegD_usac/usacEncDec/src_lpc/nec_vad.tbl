@@ -1,0 +1,175 @@
+/*
+This software module was originally developed by
+Hironori Ito (NEC Corporation)
+and edited by
+
+in the course of development of the
+MPEG-2 NBC/MPEG-4 Audio standard ISO/IEC 13818-7, 14496-1,2 and 3.
+This software module is an implementation of a part of one or more
+MPEG-2 NBC/MPEG-4 Audio tools as specified by the MPEG-2 NBC/MPEG-4 Audio
+standard. ISO/IEC  gives users of the MPEG-2 NBC/MPEG-4 Audio standards
+free license to this software module or modifications thereof for use in
+hardware or software products claiming conformance to the MPEG-2 NBC/
+MPEG-4 Audio  standards. Those intending to use this software module in
+hardware or software products are advised that this use may infringe
+existing patents. The original developer of this software module and
+his/her company, the subsequent editors and their companies, and ISO/IEC
+have no liability for use of this software module or modifications
+thereof in an implementation. Copyright is not released for non
+MPEG-2 NBC/MPEG-4 Audio conforming products. The original developer
+retains full right to use the code for his/her  own purpose, assign or
+donate the code to a third party and to inhibit third party from using
+the code for non MPEG-2 NBC/MPEG-4 Audio conforming products.
+This copyright notice must be included in all copies or derivative works.
+Copyright (c)1996.
+*/
+/*
+ *	MPEG-4 Audio Verification Model (LPC-ABS Core)
+ *	
+ *	Voice Activity Detection(VAD) Subroutines
+ *
+ *	Ver1.0	99.5.xx	(NEC)
+ */
+
+
+static float nec_lpf_coef[81] = {
+  (float)15974/32768,  (float)10420/32768,  (float)408/32768,  (float)-3447/32768,
+  (float)-406/32768,  (float)2036/32768,  (float)403/32768,  (float)-1421/32768,
+  (float)-398/32768,  (float)1071/32768,  (float)392/32768,  (float)-842/32768,
+  (float)-384/32768,  (float)679/32768,  (float)375/32768,  (float)-555/32768,
+  (float)-365/32768,  (float)457/32768,  (float)354/32768,  (float)-377/32768,
+  (float)-342/32768,  (float)311/32768,  (float)330/32768,  (float)-254/32768,
+  (float)-316/32768,  (float)206/32768,  (float)302/32768,  (float)-165/32768,
+  (float)-287/32768,  (float)129/32768,  (float)272/32768,  (float)-97/32768,
+  (float)-256/32768,  (float)70/32768,  (float)240/32768,  (float)-46/32768,
+  (float)-225/32768,  (float)25/32768,  (float)209/32768,  (float)-7/32768,
+  (float)-193/32768,  (float)-7/32768,  (float)177/32768,  (float)20/32768,
+  (float)-162/32768,  (float)-30/32768,  (float)147/32768,  (float)39/32768,
+  (float)-133/32768,  (float)-46/32768,  (float)119/32768,  (float)51/32768,
+  (float)-106/32768,  (float)-55/32768,  (float)93/32768,  (float)58/32768,
+  (float)-81/32768,  (float)-59/32768,  (float)70/32768,  (float)60/32768,
+  (float)-60/32768,  (float)-59/32768,  (float)50/32768,  (float)58/32768,
+  (float)-42/32768,  (float)-56/32768,  (float)34/32768,  (float)54/32768,
+  (float)-27/32768,  (float)-51/32768,  (float)20/32768,  (float)48/32768,
+  (float)-15/32768,  (float)-44/32768,  (float)10/32768,  (float)41/32768,
+  (float)-6/32768,  (float)-37/32768,  (float)5/32768,  (float)168/32768,
+  (float)-3/32768,
+};
+
+static double	lagWin_NB[] = {	/* 142Hz */
+	(double)16385/16384,
+	(double)16365/16384,
+	(double)16310/16384,
+	(double)16219/16384,
+	(double)16092/16384,
+	(double)15930/16384,
+	(double)15735/16384,
+	(double)15507/16384,
+	(double)15249/16384,
+	(double)14960/16384,
+	(double)14645/16384,
+	(double)14304/16384,
+	(double)13940/16384,
+};
+static double	lagWin_WB[] = {	/* 142Hz */
+	(double)16385/16384,
+	(double)16379/16384,
+	(double)16365/16384,
+	(double)16342/16384,
+	(double)16310/16384,
+	(double)16269/16384,
+	(double)16219/16384,
+	(double)16160/16384,
+	(double)16092/16384,
+	(double)16016/16384,
+	(double)15930/16384,
+	(double)15837/16384,
+	(double)15735/16384,
+	(double)15625/16384,
+	(double)15507/16384,
+	(double)15382/16384,
+	(double)15249/16384,
+	(double)15108/16384,
+	(double)14961/16384,
+	(double)14806/16384,
+	(double)14645/16384,
+	(double)14478/16384,
+	(double)14304/16384,
+};
+
+static double	LBF_corr_nb[] = {
+	(double)7869/32768,
+	(double)7011/32768,
+	(double)4837/32768,
+	(double)2299/32768,
+	(double)320/32768,
+	(double)-660/32768,
+	(double)-782/32768,
+	(double)-484/32768,
+	(double)-164/32768,
+	(double)3/32768,
+	(double)38/32768,
+	(double)21/32768,
+	(double)3/32768,
+};
+static double	LBF_corr_wb[] = {
+	(double)8340/32768,
+	(double)7868/32768,
+	(double)6979/32768,
+	(double)5774/32768,
+	(double)4386/32768,
+	(double)2958/32768,
+	(double)1627/32768,
+	(double)502/32768,
+	(double)-344/32768,
+	(double)-886/32768,
+	(double)-1136/32768,
+	(double)-1142/32768,
+	(double)-972/32768,
+	(double)-703/32768,
+	(double)-406/32768,
+	(double)-136/32768,
+	(double)66/32768,
+	(double)196/32768,
+	(double)239/32768,
+	(double)245/32768,
+	(double)172/32768,
+	(double)161/32768,
+	(double)62/32768,
+};
+
+static double	Be_Ef_tbl[] = {
+	(double)24576/32768,
+	(double)31129/32768,
+	(double)31784/32768,
+	(double)32440/32768,
+	(double)32604/32768,
+	(double)32604/32768,
+};
+
+static double	Be_El_tbl[] = {
+	(double)24576/32768,
+	(double)31129/32768,
+	(double)31784/32768,
+	(double)32440/32768,
+	(double)32604/32768,
+	(double)32604/32768,
+};
+
+static double	Be_ZC_tbl[] = {
+	(double)26214/32768,
+	(double)30146/32768,
+	(double)30801/32768,
+	(double)31457/32768,
+	(double)32440/32768,
+	(double)32702/32768,
+};
+
+static double	Be_LSF_tbl[] = {
+	(double)19660/32768,
+	(double)21299/32768,
+	(double)22937/32768,
+	(double)24576/32768,
+	(double)24576/32768,
+	(double)24576/32768,
+};

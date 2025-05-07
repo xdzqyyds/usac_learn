@@ -1,0 +1,305 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName />
+    <ProjectGuid>{9F780000-C78F-4FE9-BA90-29B6426A1039}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>11.0.61030.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)lib\$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)lib\$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)lib\$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)lib\$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\src_ssc\import\debug;..\..\src_ssc\import;..\..\..\epTool\src;..\..\src_frame;..\..\src_sls;..\..\..\..\tools\AFsp\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_LIB;SSC_DEC_LEVEL_MEDIUM;_SSC_LIB_BUILD;SSC_MP4REF_BUILD;CT_SBR;EXT2PAR;SSC_CONF_TOOL;I2R_LOSSLESS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)_vc11.pdb</ProgramDataBaseFileName>
+      <BrowseInformation />
+      <BrowseInformationFile />
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Lib>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>$(OutDir)$(ProjectName).bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\..\src_ssc\import\debug;..\..\src_ssc\import;..\..\..\epTool\src;..\..\src_frame;..\..\src_sls;..\..\..\..\tools\AFsp\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_LIB;SSC_DEC_LEVEL_MEDIUM;_SSC_LIB_BUILD;SSC_MP4REF_BUILD;CT_SBR;EXT2PAR;SSC_CONF_TOOL;I2R_LOSSLESS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)_vc11.pdb</ProgramDataBaseFileName>
+      <BrowseInformation />
+      <BrowseInformationFile />
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Lib>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>$(OutDir)$(ProjectName).bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\src_ssc\import\debug;..\..\src_ssc\import;..\..\..\epTool\src;..\..\src_frame;..\..\src_sls;..\..\..\..\tools\AFsp\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_LIB;SSC_DEC_LEVEL_MEDIUM;_SSC_LIB_BUILD;SSC_MP4REF_BUILD;CT_SBR;EXT2PAR;SSC_CONF_TOOL;I2R_LOSSLESS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)_vc11.pdb</ProgramDataBaseFileName>
+      <BrowseInformation />
+      <BrowseInformationFile />
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>$(OutDir)$(ProjectName).bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\..\src_ssc\import\debug;..\..\src_ssc\import;..\..\..\epTool\src;..\..\src_frame;..\..\src_sls;..\..\..\..\tools\AFsp\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_LIB;SSC_DEC_LEVEL_MEDIUM;_SSC_LIB_BUILD;SSC_MP4REF_BUILD;CT_SBR;EXT2PAR;SSC_CONF_TOOL;I2R_LOSSLESS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)_vc11.pdb</ProgramDataBaseFileName>
+      <BrowseInformation />
+      <BrowseInformationFile />
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>$(OutDir)$(ProjectName).bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src_ssc\AdpcmTable.c" />
+    <ClCompile Include="..\..\src_ssc\Bits.c" />
+    <ClCompile Include="..\..\src_ssc\BitstreamParser.c" />
+    <ClCompile Include="..\..\src_ssc\ct_polyphase_ssc.c" />
+    <ClCompile Include="..\..\src_ssc\ct_psdec_ssc.c" />
+    <ClCompile Include="..\..\src_ssc\Log.c" />
+    <ClCompile Include="..\..\src_ssc\Merge.c" />
+    <ClCompile Include="..\..\src_ssc\NoiseSynth.c" />
+    <ClCompile Include="..\..\src_ssc\SineSynth.c" />
+    <ClCompile Include="..\..\src_ssc\SscDec.c" />
+    <ClCompile Include="..\..\src_ssc\StereoSynth.c" />
+    <ClCompile Include="..\..\src_ssc\SynthCtrl.c" />
+    <ClCompile Include="..\..\src_ssc\TransSynth.c" />
+    <ClCompile Include="..\..\src_ssc\Window.c" />
+    <ClCompile Include="..\..\src_ssc\import\huf_s_cont.c" />
+    <ClCompile Include="..\..\src_ssc\import\huf_s_nrof_births.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufAdpcmGrid.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufAmpBirthRel.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufAmpContAbs.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufAmpContRel_0.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufAmpContRel_1.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufAmpContRel_2.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufAmpContRel_3.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufAmpSinAbs.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufCoarseIid.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufCoarseItd.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufCoarseRho.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufCoarseRhoGlobal.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufFineIid.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufFineItd.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufFineRho.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufFineRhoGlobal.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufFreqBirthRel.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufFreqContAbs.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufFreqContRel_0.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufFreqContRel_1.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufFreqContRel_2.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufFreqContRel_3.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufFreqSinAbs.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufNoiRelLag.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufNoiRelLsfE.c" />
+    <ClCompile Include="..\..\src_ssc\import\hufNoiRelNdgE.c" />
+    <ClCompile Include="..\..\src_ssc\import\SSC_fft.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src_ssc\Bits.h" />
+    <ClInclude Include="..\..\src_ssc\BitstreamParser.h" />
+    <ClInclude Include="..\..\src_ssc\BitstreamParserP.h" />
+    <ClInclude Include="..\..\src_ssc\ct_polyphase_ssc.h" />
+    <ClInclude Include="..\..\src_ssc\ct_psdec_ssc.h" />
+    <ClInclude Include="..\..\src_ssc\Log.h" />
+    <ClInclude Include="..\..\src_ssc\Merge.h" />
+    <ClInclude Include="..\..\src_ssc\NoiseSynth.h" />
+    <ClInclude Include="..\..\src_ssc\NoiseSynthP.h" />
+    <ClInclude Include="..\..\src_ssc\SineSynth.h" />
+    <ClInclude Include="..\..\src_ssc\SscDec.h" />
+    <ClInclude Include="..\..\src_ssc\SscDecP.h" />
+    <ClInclude Include="..\..\src_ssc\StereoSynth.h" />
+    <ClInclude Include="..\..\src_ssc\StereoSynthP.h" />
+    <ClInclude Include="..\..\src_ssc\SynthCtrl.h" />
+    <ClInclude Include="..\..\src_ssc\SynthCtrlP.h" />
+    <ClInclude Include="..\..\src_ssc\TransSynth.h" />
+    <ClInclude Include="..\..\src_ssc\Window.h" />
+    <ClInclude Include="..\..\src_ssc\import\cexcept.h" />
+    <ClInclude Include="..\..\src_ssc\import\HuffmanDecoder.h" />
+    <ClInclude Include="..\..\src_ssc\import\PlatformTypes.h" />
+    <ClInclude Include="..\..\src_ssc\import\SSC_Alloc.h" />
+    <ClInclude Include="..\..\src_ssc\import\SSC_BitStream.h" />
+    <ClInclude Include="..\..\src_ssc\import\SSC_BitStrm_Types.h" />
+    <ClInclude Include="..\..\src_ssc\import\SSC_Error.h" />
+    <ClInclude Include="..\..\src_ssc\import\SSC_fft.h" />
+    <ClInclude Include="..\..\src_ssc\import\SSC_SigProc_Types.h" />
+    <ClInclude Include="..\..\src_ssc\import\SSC_System.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

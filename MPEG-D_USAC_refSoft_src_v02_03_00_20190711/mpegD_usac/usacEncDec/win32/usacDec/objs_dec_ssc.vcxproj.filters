@@ -1,0 +1,242 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{df2c677a-9d97-4805-9bc3-96181c9136f5}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{7b47110d-9d22-472b-add3-afc62d2ab9a9}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Imported Files">
+      <UniqueIdentifier>{484a577f-dbb4-4473-ba7e-5b40a6b4ea67}</UniqueIdentifier>
+      <Extensions>*.c *.h</Extensions>
+    </Filter>
+    <Filter Include="Imported Files\Source">
+      <UniqueIdentifier>{1c4968d6-868e-48ce-ba2c-138028954922}</UniqueIdentifier>
+      <Extensions>*.c</Extensions>
+    </Filter>
+    <Filter Include="Imported Files\Include">
+      <UniqueIdentifier>{720d7546-8385-49cc-b33b-c0f8e44edca9}</UniqueIdentifier>
+      <Extensions>*.h</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src_ssc\AdpcmTable.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\Bits.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\BitstreamParser.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\ct_polyphase_ssc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\ct_psdec_ssc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\Log.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\Merge.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\NoiseSynth.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\SineSynth.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\SscDec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\StereoSynth.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\SynthCtrl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\TransSynth.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\Window.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\huf_s_cont.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\huf_s_nrof_births.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufAdpcmGrid.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufAmpBirthRel.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufAmpContAbs.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufAmpContRel_0.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufAmpContRel_1.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufAmpContRel_2.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufAmpContRel_3.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufAmpSinAbs.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufCoarseIid.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufCoarseItd.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufCoarseRho.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufCoarseRhoGlobal.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufFineIid.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufFineItd.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufFineRho.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufFineRhoGlobal.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufFreqBirthRel.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufFreqContAbs.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufFreqContRel_0.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufFreqContRel_1.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufFreqContRel_2.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufFreqContRel_3.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufFreqSinAbs.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufNoiRelLag.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufNoiRelLsfE.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\hufNoiRelNdgE.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_ssc\import\SSC_fft.c">
+      <Filter>Imported Files\Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src_ssc\Bits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\BitstreamParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\BitstreamParserP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\ct_polyphase_ssc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\ct_psdec_ssc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\Log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\Merge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\NoiseSynth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\NoiseSynthP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\SineSynth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\SscDec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\SscDecP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\StereoSynth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\StereoSynthP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\SynthCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\SynthCtrlP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\TransSynth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\import\cexcept.h">
+      <Filter>Imported Files\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\import\HuffmanDecoder.h">
+      <Filter>Imported Files\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\import\PlatformTypes.h">
+      <Filter>Imported Files\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\import\SSC_Alloc.h">
+      <Filter>Imported Files\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\import\SSC_BitStream.h">
+      <Filter>Imported Files\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\import\SSC_BitStrm_Types.h">
+      <Filter>Imported Files\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\import\SSC_Error.h">
+      <Filter>Imported Files\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\import\SSC_fft.h">
+      <Filter>Imported Files\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\import\SSC_SigProc_Types.h">
+      <Filter>Imported Files\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_ssc\import\SSC_System.h">
+      <Filter>Imported Files\Include</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

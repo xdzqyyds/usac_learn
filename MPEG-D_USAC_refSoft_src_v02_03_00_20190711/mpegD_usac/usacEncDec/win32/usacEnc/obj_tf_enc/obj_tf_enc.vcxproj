@@ -1,0 +1,306 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D676EE1D-D1EF-4992-BFC5-35FB7BEB6342}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>11.0.61030.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)lib\$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)lib\$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)lib\$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)lib\$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..\src_frame;..\..\..\src_frame_enc;..\..\..\src_usac_enc;..\..\..\src_usac;..\..\..\src_tf;..\..\..\src_tf_enc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;SONY_PVC;_CONSOLE;CT_SBR;USE_AFSP;PNS;CORRIGENDUM1;WIN32;_LIB;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>false</StringPooling>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)_vc11.pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0407</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Debug/obj_tf_enc.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\..\..\src_frame;..\..\..\src_frame_enc;..\..\..\src_usac_enc;..\..\..\src_usac;..\..\..\src_tf;..\..\..\src_tf_enc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;SONY_PVC;_CONSOLE;CT_SBR;USE_AFSP;PNS;CORRIGENDUM1;WIN32;_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>false</StringPooling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)_vc11.pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0407</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release/obj_tf_enc.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..\src_frame;..\..\..\src_frame_enc;..\..\..\src_usac_enc;..\..\..\src_usac;..\..\..\src_tf;..\..\..\src_tf_enc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;SONY_PVC;_CONSOLE;CT_SBR;USE_AFSP;PNS;CORRIGENDUM1;WIN32;_LIB;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>false</StringPooling>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)_vc11.pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0407</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Debug/obj_tf_enc.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\..\..\src_frame;..\..\..\src_frame_enc;..\..\..\src_usac_enc;..\..\..\src_usac;..\..\..\src_tf;..\..\..\src_tf_enc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;SONY_PVC;_CONSOLE;CT_SBR;USE_AFSP;PNS;CORRIGENDUM1;WIN32;_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>false</StringPooling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)_vc11.pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0407</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release/obj_tf_enc.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src_tf_enc\aac_qc.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\aac_tools.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\bitmux.c" />
+    <ClCompile Include="..\..\..\src_tf\ct_freqsca.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\ct_polyphase_enc.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\ct_sbr.c" />
+    <ClCompile Include="..\..\..\src_tf\decdata.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\enc_tf.c" />
+    <ClCompile Include="..\..\..\src_tf\imdct.c" />
+    <ClCompile Include="..\..\..\src_tf\mat_scale_set_shift_para.c" />
+    <ClCompile Include="..\..\..\src_tf\mat_scale_tf_requantize_spectrum.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\ms.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\nok_bwp_enc.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\nok_ltp_enc.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\nok_pitch.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\ntt_BitPack.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_check.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_cnst_chk.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_dec_bark_env.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_dec_gain.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_dec_lpc_spectrum_inv.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_dec_pgain.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_dec_pit_seq.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_dec_pitch.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_dec_sq_gain.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_denormalizer_spectrum.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_extend_pitch.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_fwex.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_get_cdbk.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_get_code.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_lsp_decw.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_lsptowt_int.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_movdd.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_mulawinv.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_post_process.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_redec.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\ntt_scale_coder.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_scale_dec_bark_env.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_scale_init.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_scale_tf_proc_spectrum_d.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\ntt_scale_vq_coder.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_scale_vq_decoder.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_set_isp.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\ntt_tf_perceptual_model.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\ntt_tf_proc_spectrum.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_tf_proc_spectrum_d.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\ntt_tf_quantize_spectrum.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_tf_requantize_spectrum.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_TfInit.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\ntt_tools.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_vec_lenp.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_vex_pn.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\ntt_vq_coder.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_vq_decoder.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\ntt_win_sw.c" />
+    <ClCompile Include="..\..\..\src_tf\ntt_zerod.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\psych.c" />
+    <ClCompile Include="..\..\..\src_tf\resilience.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\sam_bit_buffer.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\sam_encode_bsac.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\sam_encode_frame.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\sam_faencode.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\scal_enc_frame.c" />
+    <ClCompile Include="..\..\..\src_tf\son_gc_common.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\son_gc_detecter.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\son_gc_detectreset.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\son_gc_etc_enc.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\son_gc_modifier.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\son_gc_pack.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\son_pqf.c" />
+    <ClCompile Include="..\..\..\src_tf\son_pqf_common.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\sony_pvcenc.c" />
+    <ClCompile Include="..\..\..\src_tf\sony_pvclib.c" />
+    <ClCompile Include="..\..\..\src_tf\statistics_dummy.c" />
+    <ClCompile Include="..\..\..\src_tf_enc\tns3.c" />
+    <ClCompile Include="..\..\..\src_tf\transfo.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src_frame\allHandles.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,148 @@
+#-*-makefile-*- do not remove, it's for emacs!
+#----------------------------------------------------------------------
+# MPEG-4 Audio VM
+# makefile.lpc
+#
+#  
+#
+# Authors:
+# NT	Naoya Tanaka, Matsushita Communication Ind.
+# RT	R. Taori      Philips Reserach Laboratories
+# AG	A. Gerrits    Philips Reserach Laboratories
+# HP    Heiko Purnhagen, Uni Hannover <purnhage@tnt.uni-hannover.de>
+# TN	Toshiyuki Nomura, NEC Corporation
+#
+# Changes:
+# 31-jul-96   NT        first version
+# 02-Sep-96   NT	    for Ver.1.11
+# 10-Oct-96   RT & AG	for Ver.2.0
+# 23-oct-96   HP        joined pan & phi lpc modes
+# 25-oct-96   HP        adapted makefile options
+# 07-Nov-96   NT        for narrowband LPC core Ver.2.00
+# 12-nov-96   HP        added libLPC_pan dummy library
+# 07-Feb-97   TN	NEC rate control functionality
+# 16-Jun-97   NT        replaced LSP quantizer with source code module
+#----------------------------------------------------------------------
+
+
+# makefile.lpc options:
+# LPC_PAN=1   Panasonic and NEC LPC mode enabled
+#        =0   Panasonic and NEC LPC mode disabled
+# LPC_PHI=1   Philips LPC mode enabled
+#        =0   Philips LPC mode disabled
+
+# defaults:
+ifndef LPC_PAN
+LPC_PAN = 1
+endif
+ifndef LPC_PHI
+LPC_PHI = 1
+endif
+
+
+# disable LPC dummy
+OBJS_ENC_LPC = enc_lpc.o
+OBJS_DEC_LPC = dec_lpc.o
+
+ifeq "$(LPC_PHI)" "1"
+# Philips LPC mode always enabled ...
+endif
+
+# Philips LPC mode
+LIBS_ENC_LPC +=
+LIBS_DEC_LPC +=
+OBJS_ENC_LPC +=	celp_encoder.o phi_prep.o\
+		phi_lpc.o phi_apre.o celp_bitstream_mux.o\
+		phi_axit.o phi_xits.o\
+		phi_fbit.o phi_lsfr.o\
+	        nec_bws_lpf.o\
+	        pan_lspdec.o phi_priv.o
+
+OBJS_DEC_LPC +=	celp_decoder.o celp_bitstream_demux.o phi_post.o\
+		phi_lpc.o phi_xits.o phi_gxit.o phi_fbit.o phi_lsfr.o\
+		att_pc2lsf.o\
+		pan_lspqtz2_dd.o phi_priv.o
+
+OBJS_DEC_LPC_CORE = celp_decoder.o celp_bitstream_demux.o phi_post.o\
+		phi_gxit.o
+
+# Panasonic and NEC LPC mode
+LIBS_ENC_LPC +=
+LIBS_DEC_LPC +=
+OBJS_ENC_LPC +=	att_lsf2pc.o \
+		att_pc2lsf.o \
+		att_testbound.o \
+		nb_celp_enc.o \
+		pan_lspqtz2_dd.o \
+		pan_lsp_intp.o \
+		pan_mv_data.o \
+		pan_sort.o \
+		pan_stab.o \
+		nec_abs_exc_analysis.o \
+		nec_qrms_enc.o \
+		nec_mode_decision.o \
+		nec_exc_acb_enc.o \
+		nec_exc_mp_enc.o \
+		nec_exc_gain_enc.o \
+		nec_exc_mp_config.o \
+		nec_exc_module.o \
+		nec_enh_mp_enc.o \
+		nec_enh_gain_enc.o\
+		nec_bws_acb_enc.o\
+		nec_bws_exc_analysis.o\
+		nec_bws_gain_enc.o\
+		nec_bws_mp_enc.o\
+		nec_bws_qlsp_enc.o\
+		nec_bws_module.o\
+		nec_bws_qrms_dec.o\
+		phi_nec_lpc.o
+
+OBJS_DEC_LPC +=	att_abs_postp.o \
+		att_bwx.o \
+		att_firfilt.o \
+		att_iirfilt.o \
+		att_lsf2pc.o \
+		att_testbound.o \
+		nb_celp_dec.o \
+		pan_lsp_intp.o \
+		pan_lspdec.o \
+		pan_mv_data.o \
+		pan_sort.o \
+		pan_stab.o \
+		nec_abs_exc_generation.o \
+		nec_qrms_dec.o \
+		nec_exc_acb_dec.o \
+		nec_exc_mp_dec.o \
+		nec_exc_gain_dec.o \
+		nec_exc_mp_config.o \
+		nec_exc_module.o \
+		nec_enh_mp_dec.o \
+		nec_enh_gain_dec.o\
+		nec_bws_acb_dec.o\
+		nec_bws_exc_generation.o\
+		nec_bws_gain_dec.o\
+		nec_bws_module.o\
+		nec_bws_mp_dec.o\
+		nec_bws_qlsp_dec.o\
+		nec_bws_qrms_dec.o
+
+OBJS_DEC_LPC_CORE += att_abs_postp.o att_bwx.o att_firfilt.o att_iirfilt.o nb_celp_dec.o nec_abs_exc_generation.o\
+                     nec_qrms_dec.o nec_exc_acb_dec.o nec_exc_mp_dec.o nec_exc_gain_dec.o nec_enh_mp_dec.o nec_enh_gain_dec.o\
+                     nec_bws_acb_dec.o nec_bws_exc_generation.o nec_bws_gain_dec.o nec_bws_mp_dec.o nec_bws_qlsp_dec.o
+
+ifeq "$(VERSION)" "2"
+# VERSION2 Silence Compr.
+OBJS_ENC_LPC += nec_cng.o nec_cng_module.o nec_cng_lspvq.o nec_dtx.o nec_vad.o
+OBJS_DEC_LPC += nec_cng_dec.o nec_cng_module.o nec_cng_lspvq.o nec_vad.o
+OBJS_DEC_LPC_CORE += nec_cng_dec.o
+
+# CELP Error Concealment
+ifeq "$(CELP_EC)" "1"
+OBJS_DEC_LPC += crc_dmy.o err_concealment.o err_state.o fe_sub.o
+OBJS_ENC_LPC += crc_dmy.o err_concealment.o err_state.o
+endif
+
+endif
+
+# end of makefile.lpc
+
