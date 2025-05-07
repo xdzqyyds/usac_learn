@@ -1,0 +1,22 @@
+<?xml version='1.0'?>
+<uniDrcInterface>
+    <loudnessNormalizationControlInterface>
+        <loudnessNormalizationControlInterfacePresent>1</loudnessNormalizationControlInterfacePresent>
+        <loudnessNormalizationOn>1</loudnessNormalizationOn>
+        <targetLoudness>-16</targetLoudness>
+    </loudnessNormalizationControlInterface>
+    <dynamicRangeControlInterface>
+            <dynamicRangeControlInterfacePresent>1</dynamicRangeControlInterfacePresent>
+            <dynamicRangeControlOn>1</dynamicRangeControlOn>
+            <drcFeatureRequest>
+                <drcFeatureRequestType>0</drcFeatureRequestType>
+                <drcEffectTypeRequest>6</drcEffectTypeRequest>
+                <numDrcEffectTypeRequestsDesired>1</numDrcEffectTypeRequestsDesired>
+            </drcFeatureRequest>
+    </dynamicRangeControlInterface>
+    <uniDrcInterfaceExtension>
+        <uniDrcInterfaceExtensionPresent>1</uniDrcInterfaceExtensionPresent>
+        <levelingControlInterfacePresent>1</levelingControlInterfacePresent>
+        <loudnessLevelingOn>0</loudnessLevelingOn>
+    </uniDrcInterfaceExtension>
+</uniDrcInterface>

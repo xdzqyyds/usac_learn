@@ -1,0 +1,11 @@
+bin/
+lib/
+obj/
+outputData/
+*.log
+used
+.vscode/
+build*/
+*.wav
+*.raw
+conformanceData/

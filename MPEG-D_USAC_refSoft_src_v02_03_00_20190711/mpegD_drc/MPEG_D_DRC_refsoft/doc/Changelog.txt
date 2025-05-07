@@ -1,0 +1,117 @@
+2016-03-18: ISO/IEC 23003-4:2015/PDAM2 (w16088) (MPEG SVN rev925)
+-------------------------------------------
+
+- initial version of MPEG-D DRC Amendment 2: Reference Software 
+  
+2016-07-29: ISO/IEC 23003-4:2015/DAM2 (w16293) (MPEG SVN rev984)
+-------------------------------------------
+
+- module updates
+   . selectionProcessLib
+     -- update of loudness and peak value selection (--> w16296 - Defect Report on MPEG-D DRC Edition 2015)
+
+   . drcToolEncoder (informative)
+     -- improved downmix coefficient encoding
+     -- xml configuration interface 
+
+   . uniDrcInterfaceEncoderCmdl (informative)
+     -- xml configuration interface 
+
+- tool updates
+   . simple xml reader library added
+
+- bugfixes
+   . initialization of interpolationParams (fixes segmentation fault with Linux build)
+   . fix for missing DRC framesize in DrcCoefficientsV1
+   . set EQ IDs to 0 if there are no EQs
+   . correction for multiple downmix IDs in selection process
+   . refinement of peak value for DRC sets with drcSetTargetLoudnessPresent==1
+   . fix targetChannelCount in selection process transfer files for MPEG-H 3DA
+   . correction of sequence index for gainCodingProfile==3
+   . fix selection process default parameters for MPEG-H 3DA
+   . missing audio delay for unprocessed channels
+   . fixed bugs in loudness info processing
+
+- maintenance
+   . command line option for MPEG-H 3DA parameters (required for MPEG-H 3DA reference software): 
+     -- DRC set selection process parameters (selected groupIDs and groupPresetIDs)
+     -- DownmixMatrixSet() parameters (targetChannelCount for each downmixID)
+   . cmdl option for split bitstream format added (separate input/output file for uniDrcConfig(), uniDrcGain() and loudnessInfoSet() payload)
+   . increased max count for drcInstructions, loudnessInfo, and sequence structures
+   . add drcEffectRequest and targetLevel option in selectionProcessCmdl
+   . add VS2012 projects (required for MPEG-H 3DA reference software)
+   . modification of output format of selection process transfer file
+   . additional test vectors and reference files for MPEG-D DRC AMD 1 and MPEG-H 3DA
+   . test vector and reference file updates as required for other software modifications 
+   . script for generation of conformance data from test vectors (--> w16295 - MPEG-D DRC PDAM 3: Conformance)
+   . minor bugfixes, cleanup and software maintenance
+
+2016-11-18: Study on ISO/IEC 23003-4:2015/DAM2 (w16380) (MPEG SVN rev1021)
+-------------------------------------------
+
+- module updates
+   . drcToolEncoder
+     -- encoding of DRC set and EQ set complexity level numbers
+     -- signaling of maximum delay numbers for DRC and EQ sets (--> w16379 - Text of ISO/IEC 23003-4:2015 FDAM 1)
+
+   . drcToolDecoder
+     -- decoding of maximum delay numbers for DRC and EQ sets (--> w16379 - Text of ISO/IEC 23003-4:2015 FDAM 1)
+     -- suppression of algorithmic delay at decoder output
+     -- option for constant decoder delay
+     -- improvement of file end behavior
+
+- maintenance
+   . update of example bitstreams (--> w16379 - Text of ISO/IEC 23003-4:2015 FDAM 1)
+   . update of AMD1 reference waveforms (suppression of algorithmic delay at decoder output)
+   . update of documentation
+   . minor bugfixes, cleanup and software maintenance
+
+2017-01-27: ISO/IEC 23003-4:2015/FDAM2 (w16580) (MPEG SVN rev1047)
+-------------------------------------------
+
+- bugfix
+   . loudness normalization of bitstreams that contain loudness metadata only 
+
+- maintenance
+   . x64 build support on Windows platforms
+   . code cleanup and software maintenance
+
+2018-07-xx: ISO/IEC 23003-4:2018/DCOR1 (wxxx) (MPEG SVN revxxx)
+-------------------------------------------
+
+- module updates
+   . drcToolEncoder
+    -- encoding of ‘ludt’, ‘chnl’, ‘dmix’, ‘udc2’, ‘udi2’, ‘udex’, ‘pdc1’, ‘pdi1’ boxes according to ISO/IEC 14496-12
+    -- minor improvements on reference software encoder (informative)
+    -- node reservoir encoding
+   . uniDrcBitstreamDecoderLib
+    -- decoding of ‘ludt’, ‘chnl’, ‘dmix’, ‘udc2’, ‘udi2’, ‘udex’, ‘pdc1’, ‘pdi1’ boxes according to ISO/IEC 14496-12
+    -- precedence for loudness metadata at ISOBMFF level
+    -- correction of parametric DRC bitstream parser
+   . uniDrcGainDecoderLib
+    -- support of bitstreams without uniDrcConfig() payload (uniDrcConfigPresent=0)
+    -- correction of parametric DRC gain delay alignment
+    -- additional CICP characteristics and corrections for gain mapping tool
+   . drcToolDecoder
+    -- explicit command line parameters for target loudness and DRC set effect request
+   . peakLimiterCmdl
+    -- explicit command line parameters for attack and release time
+   . selectionProcessLib
+    -- correction of peak value for downmix configurations
+    -- correction of final selection based on downmixId
+    -- correction of peak value selection, pre-selection and final selection based on groupId and groupPresetId
+    -- correction of channel count for DRC complexity computation
+
+- maintenance
+   . default decoder PCM output format set to 24 bits
+   . update of reference waveforms 
+   . minor bugfixes, cleanup and software maintenance
+
+2023-04-28: ISO/IEC 23003-4:2020/Amd 2, Loudness Leveling
+-------------------------------------------
+- module updates
+   . loudness leveling support as specified in ISO/IEC 23003-4:2020/Amd 2
+   . bugfix on DRC set selection for activated album mode
+
+- maintenance
+   . build-system: replace old project files (MSVC, Makefiles) with cmake (see documentation for build instructions)
