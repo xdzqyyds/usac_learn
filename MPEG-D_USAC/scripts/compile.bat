@@ -251,5 +251,5 @@ if %executeDecoding% NEQ 0 (
   echo %mp4Dir%\
 )
 echo.
-echo       Build successful.
+echo       All Build successful.
 exit /B 0

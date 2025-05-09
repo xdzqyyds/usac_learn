@@ -41,7 +41,7 @@ if %errorlevel% NEQ 0 goto BUILDERROR
 cmake --build . %clean%
 if %errorlevel% NEQ 0 goto BUILDERROR
 
-echo       Build Successful.
+echo       DRC Build Successful.
 if "%silentMode%"=="call_pause" pause()
 GOTO END
 
