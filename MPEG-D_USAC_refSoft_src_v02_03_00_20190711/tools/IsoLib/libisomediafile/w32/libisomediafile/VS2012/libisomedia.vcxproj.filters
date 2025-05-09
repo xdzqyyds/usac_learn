@@ -171,6 +171,23 @@
     <ClCompile Include="..\..\..\src\StereoVideoAtom.c" />
     <ClCompile Include="..\..\..\src\StereoVideoGroupAtom.c" />
     <ClCompile Include="..\..\..\src\TrackTypeAtom.c" />
+
+    <ClCompile Include="..\..\..\src\BoxedMetadataSampleEntry.c" />
+    <ClCompile Include="..\..\..\src\MetadataKeyTableBox.c" />
+    <ClCompile Include="..\..\..\src\MetadataKeyDeclarationBox.c" />
+    <ClCompile Include="..\..\..\src\MetadataLocaleBox.c" />
+    <ClCompile Include="..\..\..\src\MetadataSetupBox.c" />
+    <ClCompile Include="..\..\..\src\MetadataKeyBox.c" />
+    <ClCompile Include="..\..\..\src\VVCConfigAtom.c" />
+    <ClCompile Include="..\..\..\src\VVCNALUConfigAtom.c" />
+    <ClCompile Include="..\..\..\src\MP4MebxTrackReader.c" />
+    <ClCompile Include="..\..\..\src\GroupsListBox.c" />
+    <ClCompile Include="..\..\..\src\EntityToGroupBox.c" />
+    <ClCompile Include="..\..\..\src\SegmentTypeAtom.c" />
+    <ClCompile Include="..\..\..\src\SegmentIndexAtom.c" />
+    <ClCompile Include="..\..\..\src\SubsegmentIndexAtom.c" />
+    <ClCompile Include="..\..\..\src\ProducerReferenceTimeAtom.c" />
+    <ClCompile Include="..\..\..\src\VolumetricVisualMediaHeaderAtom.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\FileMappingDataHandler.h" />
