@@ -31,7 +31,7 @@
 2025.5.9
 ### 测试libusac编解码器的所有功能
 
-
+```
 AOT : 42 - USAC
 USAC Codec Mode : Switched Mode
 Harmonic SBR : 0                  无效
@@ -46,3 +46,4 @@ Bitrate : 64000 bps
 Frame Length : 1024
 Sampling Frequency : 44100 Hz
 ************************************************************************************************
+```
