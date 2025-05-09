@@ -29,7 +29,7 @@
 
 
 2025.5.9
-### 测试libusac编解码器的所有功能
+#### 测试libusac编解码器的所有功能
 
 ```
 AOT : 42 - USAC
@@ -46,4 +46,45 @@ Bitrate : 64000 bps
 Frame Length : 1024
 Sampling Frequency : 44100 Hz
 ************************************************************************************************
+```
+
+
+
+#### libtsplite 构建失败
+原因：环境变量配置出现疏漏
+解决：VS110COMNTOOLS环境变量的最后要加上\ ，这样可以防止相对路径拼接出错
+```
+E:\VS2012\Common7\Tools\ 
+
+```
+#### core Encoder 构建失败
+原因：在 \tools\IsoLib\libisomediafile\w32\libisomediafile\VS2012\libisomedia.vcxproj
+        \tools\IsoLib\libisomediafile\w32\libisomediafile\VS2012\libisomedia.vcxproj.filters
+     中缺少部分.c文件的引入
+     
+解决：分别添加下面内容即可
+
+```
+    <ClCompile Include="..\..\..\src\BoxedMetadataSampleEntry.c" />
+    <ClCompile Include="..\..\..\src\MetadataKeyTableBox.c" />
+    <ClCompile Include="..\..\..\src\MetadataKeyDeclarationBox.c" />
+    <ClCompile Include="..\..\..\src\MetadataLocaleBox.c" />
+    <ClCompile Include="..\..\..\src\MetadataSetupBox.c" />
+    <ClCompile Include="..\..\..\src\MetadataKeyBox.c" />
+    <ClCompile Include="..\..\..\src\VVCConfigAtom.c" />
+    <ClCompile Include="..\..\..\src\VVCNALUConfigAtom.c" />
+    <ClCompile Include="..\..\..\src\MP4MebxTrackReader.c" />
+    <ClCompile Include="..\..\..\src\GroupsListBox.c" />
+    <ClCompile Include="..\..\..\src\EntityToGroupBox.c" />
+    <ClCompile Include="..\..\..\src\SegmentTypeAtom.c" />
+    <ClCompile Include="..\..\..\src\SegmentIndexAtom.c" />
+    <ClCompile Include="..\..\..\src\SubsegmentIndexAtom.c" />
+    <ClCompile Include="..\..\..\src\ProducerReferenceTimeAtom.c" />
+    <ClCompile Include="..\..\..\src\VolumetricVisualMediaHeaderAtom.c" />
+```
+
+
+
+```
+
 ```
