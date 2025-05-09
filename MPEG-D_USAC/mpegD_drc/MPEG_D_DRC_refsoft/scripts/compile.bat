@@ -2,7 +2,8 @@
 
 set currentDir=%~dp0
 set buildMode=Debug
-set silentMode=call_pause
+::set silentMode=call_pause
+set silentMode=silent
 
 set AMD1=0
 set MPEGH=0
