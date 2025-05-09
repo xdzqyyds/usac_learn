@@ -208,10 +208,10 @@ echo Compiling drcCoder
   )
   if %errorlevel% NEQ 0 ( if %verbose% EQU 1 ( type DrcTool.log 2>nul & goto BUILDERROR ) else ( goto BUILDERROR ))
 
-  copy %currentDirUsac%\..\mpegD_drc\MPEG_D_DRC_refsoft\modules\drcTool\drcToolDecoder\make\%buildMode%\drcToolDecoder.exe %buildDir%\ >> DrcTool.log
+  copy %currentDirUsac%\..\mpegD_drc\MPEG_D_DRC_refsoft\modules\drcTool\drcToolDecoder\bin\Windows_AMD64\drcToolDecoder.exe %buildDir%\ >> DrcTool.log
   if %errorlevel% NEQ 0 ( if %verbose% EQU 1 ( type DrcTool.log 2>nul & goto BUILDERROR ) else ( goto BUILDERROR ))
 
-  copy %currentDirUsac%\..\mpegD_drc\MPEG_D_DRC_refsoft\modules\drcTool\drcToolEncoder\make\%buildMode%\drcToolEncoderCmdl.exe %buildDir%\ >> DrcTool.log
+  copy %currentDirUsac%\..\mpegD_drc\MPEG_D_DRC_refsoft\modules\drcTool\drcToolEncoder\bin\Windows_AMD64\drcToolEncoder.exe %buildDir%\ >> DrcTool.log
   if %errorlevel% NEQ 0 ( if %verbose% EQU 1 ( type DrcTool.log 2>nul & goto BUILDERROR ) else ( goto BUILDERROR ))
 
   copy %currentDirUsac%\..\mpegD_drc\MPEG_D_DRC_refsoft\scripts\DrcTool.log %currentDirUsac%\DrcTool.log 1>nul
