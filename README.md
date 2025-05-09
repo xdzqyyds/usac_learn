@@ -1,6 +1,6 @@
 2025.5.7
 
-### 思考
+### 思考编解码流程
 ```
 .wav（PCM）音频
 
@@ -26,3 +26,23 @@
 持续时长应该是原始帧或解码帧播放的持续时间，在编码帧这里衡量时长似乎没有意义，或者说编码帧的时长是逻辑意义上的，而组成编码帧的字节是物理意义上的。
 
 换句话说，在处理所有音频文件中，始终都是对字节来进行处理，时间是逻辑上的估量，因此不能通过读取一段一段的固定时长来表示一帧一帧的编码数据。
+
+
+2025.5.9
+### 测试libusac编解码器的所有功能
+
+
+AOT : 42 - USAC
+USAC Codec Mode : Switched Mode
+Harmonic SBR : 0                  无效
+High quality esbr : 0             无法使用
+Complex Prediction Flag : 0       无效
+TNS Flag : 0                      无效
+Core-coder framelength index : 3  固定
+Noise Filling Flag : 0            无效
+Use ADTS Flag : 0                 固定
+Use TNS Flag : 0                  无效
+Bitrate : 64000 bps
+Frame Length : 1024
+Sampling Frequency : 44100 Hz
+************************************************************************************************
