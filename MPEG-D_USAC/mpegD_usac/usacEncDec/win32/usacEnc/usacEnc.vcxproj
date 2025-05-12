@@ -282,10 +282,12 @@
   <ItemGroup>
     <ClCompile Include="..\..\src_usac_enc\usac_bitmux.c" />
     <ClCompile Include="..\..\src_frame_enc\usacEnc.c" />
+    <ClCompile Include="..\..\src_frame_enc\usacEncApi.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src_frame\allHandles.h" />
     <ClInclude Include="..\..\src_frame_enc\encoder.h" />
+    <ClInclude Include="..\..\src_frame_enc\libxaace_export.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\tools\IsoLib\libisomediafile\w32\libisomediafile\VS2012\libisomedia.vcxproj">

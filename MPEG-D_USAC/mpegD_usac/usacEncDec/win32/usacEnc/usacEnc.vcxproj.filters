@@ -21,12 +21,18 @@
     <ClCompile Include="..\..\src_frame_enc\usacEnc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src_frame_enc\usacEncApi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src_frame\allHandles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src_frame_enc\encoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_frame_enc\libxaace_export.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
