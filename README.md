@@ -96,6 +96,7 @@ E:\VS2012\Common7\Tools\
 - 先编译成功，提供必要的依赖文件。
 - 在VS2022中进行，忽略版本升级。
 - 将调试中的工作目录改为 ```$(OutDir)```,代表可执行文件下的路径,并放入音频文件
+- 当前已经通过修改编码端`vcproj`等一系列文件进行了默认配置，但`ISO-IEC-USAC GitHub` 仓库中没有修改
 
 ```
     宏名	                   含义
@@ -113,3 +114,195 @@ $(Configuration)	当前构建配置（如 Debug 或 Release）
 ```
 encode per frame time: 6.50 ms
 ```
+### 码率限制
+
+最低码率为`17 kbps`
+
+### 编码器封装
+```
+LIBXAACENC_API typedef struct {
+    signed int bitrate;            // 编码码率(推荐16000)
+    signed int ui_pcm_wd_sz;       // pcm格式(pcm_16le)
+    signed int ui_samp_freq;       // 采样率
+    signed int ui_num_chan;        // 通道数量
+    signed int sbr_flag;           // 是否使用SBR(0-不使用, 1-使用)
+    signed int mps_flag;           // 是否使用MPS(0-不使用, 1-使用)
+    signed int Super_frame_mode;   // 超级帧格式（400ms或200ms）
+} encode_para;
+
+
+encode_obj* xheaace_create(encode_para* encode_para);
+
+LIBXAACENC_API signed int xheaace_encode_frame(encode_obj* pv_encode_obj,  const unsigned char* raw_pcm_frame);
+
+LIBXAACENC_API signed int xheaace_delete(encode_obj* pv_encode_obj);
+
+```
+2025.5.13
+### 封装过程中需要处理的位置
+
+#### 关注`audioFile->fileAfsp`   `fileNumSample = encNumSample`
+```
+audioFile = AudioOpenRead(audioFileName,&numChannel,&fSample,
+                          &fileNumSample);
+其中
+`numChannel` 和 `fSample` 可以通过参数进行配置
+`audioFile`则需要在后面着重考虑
+`fileNumSample`表示采样点数，需要着重考虑
+`file->fileAfsp = af`这句话要仔细考虑
+
+af = AFopenRead(fileName,&ns,&nc,&fs,
+    AUdebugLevel?stdout:(FILE*)NULL);
+af的值来自上面的函数
+
+```
+
+#### 考虑设置一个固定的输出文件 `encoded.mp4`
+```
+ outfile = StreamFileOpenWrite(bitFileName, FILETYPE_AUTO, NULL);
+
+ 留意输出文件的设置
+```
+
+#### 函数内部并未用到`audioFile->fileAfsp`，该函数应该可以忽略
+```
+  AudioSeek(audioFile,
+            startSample+delayNumSample-startupNumFrame*frameNumSample);
+重点关注该函数，可能用于从音频文件中读取音频数据
+```
+
+#### `该函数在循环编码中起到关键作用，考虑新建音频采集接口函数代替，用于读取每一帧,其中sampleBuf为读取到的音频数据`
+```
+numSample = AudioReadData(audioFile,sampleBufRS,frameNumSample*downSampleRatio/upSampleRatio);
+
+该函数从输入的音频文件中读取数据，并将读取的数据以每通道分离的二维 float 数组 data[channel][sample] 的形式输出
+```
+
+#### 关键函数，用于编码一帧，将结果输出到`au_buffers[track_count_total]`中
+```
+err = frameData.enc_mode->EncFrame(encSampleBuf,
+                                   &au_buffers[track_count_total],
+                                   requestIPF,
+                                   &usacSyncState,
+                                   *frameData.enc_data,
+                                   sbrenable ? ((upSampleRatio > 1) ? tmpBufUS : tmpBufRS) : NULL);
+
+关键函数，用于编码一帧，其输入参数有待考量
+```
+
+#### 考虑对`au`组装为超级帧
+```
+au->numBits         = BsBufferNumBit(au_buffers[i]);
+au->data            = BsBufferGetDataBegin(au_buffers[i]);
+关键函数，au表示编码后的比特流大小和指针
+
+```
+
+#### 考虑保留文件写入功能，在主动停止音频采集时触发写入磁盘操作
+```
+StreamPutAccessUnit(outprog, i, au);将比特率写入outprog
+StreamFileSetEditlistValues;将元数据写入outprog
+if (StreamFileClose(outfile))
+  CommonExit(1,"Encode: error closing bit stream file");写入磁盘文件
+
+```
+下面的函数时从文件中读取num个buf
+
+tmp = AFreadData(file->fileAfsp,
+    file->numChannel*file->currentSample+cur,buf,num);
+
+
+AFreadData (AFILE *AFp, long int offs, float Dbuff[], int Nreq)
+
+{
+  int Nout;
+
+  Nout = AFfReadData (AFp, offs, Dbuff, Nreq);
+
+  return Nout;
+}
+
+int
+AFfReadData (AFILE *AFp, long int offs, float Dbuff[], int Nreq)
+
+{
+  int i, Nb, Nv, Nr, Nout;
+
+/* Check the operation  */
+  assert (AFp->Op == FO_RO);
+  assert (! AFp->Error);
+
+/* Fill in zeros at the beginning of data */
+  Nb = (int) MAXV (0, MINV (-offs, Nreq));
+  for (i = 0; i < Nb; ++i) {
+    Dbuff[i] = 0.0F;
+    ++offs;
+  }
+  Nout = Nb;
+
+/* Position the file */
+  AFp->Error = AFposition (AFp, offs);
+
+/* The file reading routines expect that the file is positioned at the data
+   to be read.  They use the following AFp fields:
+     AFp->fp - file pointer
+     AFp->Swapb - data swap indicator
+     AFp->ScaleF - data scaling factor
+  An error is detected on the outside by calling ferror() or by checking
+  AFp->Error (for text data files).
+
+  Errors:  Nr < Nreq - Nb  && ferror or AFp->Error set
+  EOF:     Nr < Nreq - Nb  && ferror and AFp->Error not set
+
+  This routine updates the following AFp values
+    AFp->Error - Set for an error
+    AFp->Isamp - Current data sample.  This value is set to the current
+      position before reading and incremented by the number of samples read.
+    AFp->Nsamp - Number of samples (updated if not defined initially and EOF
+      is detected)
+*/
+
+/* Transfer data from the file */
+  if (AFp->Nsamp == AF_NSAMP_UNDEF)
+    Nv = Nreq - Nout;
+  else
+    Nv = (int) MINV (Nreq - Nout, AFp->Nsamp - offs);
+
+  if (! AFp->Error && Nv > 0) {
+    Nr = (*AF_Read[AFp->Format]) (AFp, &Dbuff[Nb], Nv);
+    Nout += Nr;
+    AFp->Isamp += Nr;
+
+/* Check for errors */
+    if (Nr < Nv) {
+      if (ferror (AFp->fp)) {
+	UTsysMsg ("AFfReadData - %s %ld", AFM_ReadErrOffs, AFp->Isamp);
+	AFp->Error = AF_IOERR;
+      }
+      else if (AFp->Error)
+	UTwarn ("AFfReadData - %s %ld", AFM_ReadErrOffs, AFp->Isamp);
+      else if (AFp->Nsamp != AF_NSAMP_UNDEF) {
+	UTwarn ("AFfReadData - %s %ld", AFM_UEoFOffs, AFp->Isamp);
+	AFp->Error = AF_UEOF;
+      }
+      else
+	AFp->Nsamp = AFp->Isamp;
+    }
+  }
+
+/* Zeros at the end of the file */
+  for (i = Nout; i < Nreq; ++i)
+    Dbuff[i] = 0.0F;
+
+  if (AFp->Error && (AFoptions ())->ErrorHalt)
+    exit (EXIT_FAILURE);
+
+  return Nout;
+}
+
+现在我不读取文件，而是利用const unsigned char* raw_pcm_frame表示采集到的音频源数据，进行类似上述的处理如下,那么两者等价吗
+
+
+p = raw_pcm_frame + i * 2;
+sample = (int16_t)(p[0] | (p[1] << 8));
+buf = sample / 32768.0f;
