@@ -2779,7 +2779,7 @@ long find_data_chunk(FILE* wav_file) {
 #define Super_frame_length   AUDIO_BITRATE*AUDIO_SUPERFRAME/8000
 
 //int main() {
-//    const char* input_wav_path = "input2.wav";
+//    const char* input_wav_path = "input.wav";
 //    const char* encoded_wav_path = "encoded.mp4";
 //    FILE* input_wav_file = fopen(input_wav_path, "rb");
 //    FILE* encoded_wav_file = NULL;
