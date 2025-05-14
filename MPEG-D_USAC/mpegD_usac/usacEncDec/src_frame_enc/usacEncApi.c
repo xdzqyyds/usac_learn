@@ -2778,50 +2778,50 @@ long find_data_chunk(FILE* wav_file) {
 #define Handle_frame_length  256*AUDIO_CHANNELS*AUDIO_PCM_WIDTH 
 #define Super_frame_length   AUDIO_BITRATE*AUDIO_SUPERFRAME/8000
 
-int main() {
-    const char* input_wav_path = "input2.wav";
-    const char* encoded_wav_path = "encoded.mp4";
-    FILE* input_wav_file = fopen(input_wav_path, "rb");
-    FILE* encoded_wav_file = NULL;
-    encode_obj* ctx;
-    encode_para enc_para;
-    unsigned char* buffer = (unsigned char*)malloc(Handle_frame_length);
-    int i = 0;
-    long data_offset = find_data_chunk(input_wav_file);
- 
-
-    memset(&enc_para, 0, sizeof(encode_para)); 
-    enc_para.bitrate = AUDIO_BITRATE;
-    enc_para.ui_pcm_wd_sz = AUDIO_PCM_WIDTH;
-    enc_para.ui_samp_freq = AUDIO_SAMPLE_RATE;
-    enc_para.ui_num_chan = AUDIO_CHANNELS;
-    enc_para.sbr_flag = AUDIO_SBR_FLAG;
-    enc_para.mps_flag = AUDIO_MPS_FLAG;
-    enc_para.Super_frame_mode = AUDIO_SUPERFRAME;
-    enc_para.input_file_flag = 0;
-    enc_para.output_file_flag = 1;
-    if (enc_para.output_file_flag) {
-        encoded_wav_file = fopen(encoded_wav_path, "wb");
-    }
-    ctx = xheaace_create(&enc_para);
-
-
-    fseek(input_wav_file, data_offset, SEEK_SET);
-
-    while (i < 600) {
-        fread(buffer, 1, Handle_frame_length, input_wav_file);
-        xheaace_encode_frame(ctx, buffer);
-        fprintf(stdout, "\rframe %4d", ctx->frame);
-        fflush(stdout);
-        i++;
-    }
-
-    xheaace_delete(ctx, encoded_wav_path);
-    fclose(input_wav_file);
-    if (enc_para.output_file_flag) {
-        fclose(encoded_wav_file);
-    }
-    free(buffer);
-    return 0;
-}
+//int main() {
+//    const char* input_wav_path = "input2.wav";
+//    const char* encoded_wav_path = "encoded.mp4";
+//    FILE* input_wav_file = fopen(input_wav_path, "rb");
+//    FILE* encoded_wav_file = NULL;
+//    encode_obj* ctx;
+//    encode_para enc_para;
+//    unsigned char* buffer = (unsigned char*)malloc(Handle_frame_length);
+//    int i = 0;
+//    long data_offset = find_data_chunk(input_wav_file);
+// 
+//
+//    memset(&enc_para, 0, sizeof(encode_para)); 
+//    enc_para.bitrate = AUDIO_BITRATE;
+//    enc_para.ui_pcm_wd_sz = AUDIO_PCM_WIDTH;
+//    enc_para.ui_samp_freq = AUDIO_SAMPLE_RATE;
+//    enc_para.ui_num_chan = AUDIO_CHANNELS;
+//    enc_para.sbr_flag = AUDIO_SBR_FLAG;
+//    enc_para.mps_flag = AUDIO_MPS_FLAG;
+//    enc_para.Super_frame_mode = AUDIO_SUPERFRAME;
+//    enc_para.input_file_flag = 0;
+//    enc_para.output_file_flag = 1;
+//    if (enc_para.output_file_flag) {
+//        encoded_wav_file = fopen(encoded_wav_path, "wb");
+//    }
+//    ctx = xheaace_create(&enc_para);
+//
+//
+//    fseek(input_wav_file, data_offset, SEEK_SET);
+//
+//    while (i < 600) {
+//        fread(buffer, 1, Handle_frame_length, input_wav_file);
+//        xheaace_encode_frame(ctx, buffer);
+//        fprintf(stdout, "\rframe %4d", ctx->frame);
+//        fflush(stdout);
+//        i++;
+//    }
+//
+//    xheaace_delete(ctx, encoded_wav_path);
+//    fclose(input_wav_file);
+//    if (enc_para.output_file_flag) {
+//        fclose(encoded_wav_file);
+//    }
+//    free(buffer);
+//    return 0;
+//}
 
