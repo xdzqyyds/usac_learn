@@ -1904,98 +1904,98 @@ static int Encode (
 
 /* ---------- main ---------- */
 
-int main (int argc, char *argv[])
-{
-  int              error                                   = 0;
-  char             wav_InputFile[FILENAME_MAX]             = {0};
-  char             mp4_OutputFile[FILENAME_MAX]            = {0};
-  char             cfg_FileName[FILENAME_MAX]              = {0};
-  char             globalBinariesPath[3 * FILENAME_MAX]    = {0};
-  int              useGlobalBinariesPath                   = 1;
-  char           * codecMode;
-  int              numChannelOut                           = 0;
-  float            fSampleOut                              = 0.0f;
-  int              mainDebugLevel                          = 0;
-  int              regionDuratUsed                         = 0;
-  float            regionDurat                             = -1;
-  float            regionStart                             = 0;
-  HANDLE_ENCPARA   encPara = (HANDLE_ENCPARA)calloc(1, sizeof(ENC_PARA));
-
-  VERBOSE_LEVEL    verboseLevel  = VERBOSE_NONE;  /* defines verbose level */
-
-  RECYCLE_LEVEL    recycleLevel = RECYCLE_ACTIVE;                                                 /* defines the clean-up behavior */
-  int              bUseWindowsCommands                     = 0;
-  DRC_PARAMS       drcParams = {0};
-  sprintf(drcParams.tmpFile_Drc_payload,     "tmpFileUsacEnc_drc_payload_output.bit");
-  sprintf(drcParams.tmpFile_Drc_config,      "tmpFileUsacEnc_drc_config_output.bit");
-  sprintf(drcParams.tmpFile_Loudness_config, "tmpFileUsacEnc_drc_loudness_output.bit");
-  sprintf(drcParams.logfile,                 "drcToolEncoder.log");
-
-  codecMode = MODENAME_USAC;
-  
-  /* parse command line parameters */
-  error = PrintCmdlineHelp(argc, argv);
-  if (0 != error) {
-    exit(0);
-  }
-
-  error = GetCmdline(argc,
-                     argv,
-                     wav_InputFile,
-                     mp4_OutputFile,
-                     cfg_FileName,
-                     &useGlobalBinariesPath,
-                     &numChannelOut,
-                     &fSampleOut,
-                     encPara,
-                     &drcParams,
-                     &mainDebugLevel,
-                     &verboseLevel,
-                     &recycleLevel
-                     );
-
-  if (0 != error) {
-    CommonExit(1, "Error initializing MPEG USAC Audio decoder. Invalid command line parameters.");
-  }
-
-  error = setupUsacEncoder(useGlobalBinariesPath,
-                           globalBinariesPath,
-                           cfg_FileName,
-                           drcParams.binary_DrcEncoder,
-                           verboseLevel);
-  if (error != 0) {
-    return error;
-  }
-
-  Encode(wav_InputFile,
-         mp4_OutputFile,
-         &drcParams,
-         codecMode,
-         encPara,
-         regionStart,
-         regionDurat,
-         numChannelOut,
-         fSampleOut,
-         mainDebugLevel,
-         verboseLevel);
-
-  /* Check if windows or linux commands should be used */
-  bUseWindowsCommands = useWindowsCommands();
-
-  /**********************************/
-  /* clean up                       */
-  /**********************************/
-  removeTempFiles(recycleLevel,
-                  bUseWindowsCommands,
-                  verboseLevel);
-
-  if( verboseLevel >= VERBOSE_LVL1 ){
-    fprintf(stdout,"\n");
-    fprintf(stdout,"Finished.\n");
-  }
-
-  return 0;
-}
+//int main (int argc, char *argv[])
+//{
+//  int              error                                   = 0;
+//  char             wav_InputFile[FILENAME_MAX]             = {0};
+//  char             mp4_OutputFile[FILENAME_MAX]            = {0};
+//  char             cfg_FileName[FILENAME_MAX]              = {0};
+//  char             globalBinariesPath[3 * FILENAME_MAX]    = {0};
+//  int              useGlobalBinariesPath                   = 1;
+//  char           * codecMode;
+//  int              numChannelOut                           = 0;
+//  float            fSampleOut                              = 0.0f;
+//  int              mainDebugLevel                          = 0;
+//  int              regionDuratUsed                         = 0;
+//  float            regionDurat                             = -1;
+//  float            regionStart                             = 0;
+//  HANDLE_ENCPARA   encPara = (HANDLE_ENCPARA)calloc(1, sizeof(ENC_PARA));
+//
+//  VERBOSE_LEVEL    verboseLevel  = VERBOSE_NONE;  /* defines verbose level */
+//
+//  RECYCLE_LEVEL    recycleLevel = RECYCLE_ACTIVE;                                                 /* defines the clean-up behavior */
+//  int              bUseWindowsCommands                     = 0;
+//  DRC_PARAMS       drcParams = {0};
+//  sprintf(drcParams.tmpFile_Drc_payload,     "tmpFileUsacEnc_drc_payload_output.bit");
+//  sprintf(drcParams.tmpFile_Drc_config,      "tmpFileUsacEnc_drc_config_output.bit");
+//  sprintf(drcParams.tmpFile_Loudness_config, "tmpFileUsacEnc_drc_loudness_output.bit");
+//  sprintf(drcParams.logfile,                 "drcToolEncoder.log");
+//
+//  codecMode = MODENAME_USAC;
+//  
+//  /* parse command line parameters */
+//  error = PrintCmdlineHelp(argc, argv);
+//  if (0 != error) {
+//    exit(0);
+//  }
+//
+//  error = GetCmdline(argc,
+//                     argv,
+//                     wav_InputFile,
+//                     mp4_OutputFile,
+//                     cfg_FileName,
+//                     &useGlobalBinariesPath,
+//                     &numChannelOut,
+//                     &fSampleOut,
+//                     encPara,
+//                     &drcParams,
+//                     &mainDebugLevel,
+//                     &verboseLevel,
+//                     &recycleLevel
+//                     );
+//
+//  if (0 != error) {
+//    CommonExit(1, "Error initializing MPEG USAC Audio decoder. Invalid command line parameters.");
+//  }
+//
+//  error = setupUsacEncoder(useGlobalBinariesPath,
+//                           globalBinariesPath,
+//                           cfg_FileName,
+//                           drcParams.binary_DrcEncoder,
+//                           verboseLevel);
+//  if (error != 0) {
+//    return error;
+//  }
+//
+//  Encode(wav_InputFile,
+//         mp4_OutputFile,
+//         &drcParams,
+//         codecMode,
+//         encPara,
+//         regionStart,
+//         regionDurat,
+//         numChannelOut,
+//         fSampleOut,
+//         mainDebugLevel,
+//         verboseLevel);
+//
+//  /* Check if windows or linux commands should be used */
+//  bUseWindowsCommands = useWindowsCommands();
+//
+//  /**********************************/
+//  /* clean up                       */
+//  /**********************************/
+//  removeTempFiles(recycleLevel,
+//                  bUseWindowsCommands,
+//                  verboseLevel);
+//
+//  if( verboseLevel >= VERBOSE_LVL1 ){
+//    fprintf(stdout,"\n");
+//    fprintf(stdout,"Finished.\n");
+//  }
+//
+//  return 0;
+//}
 
 /* end of mp4enc.c */
 

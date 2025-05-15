@@ -206,103 +206,12 @@ if (StreamFileClose(outfile))
   CommonExit(1,"Encode: error closing bit stream file");写入磁盘文件
 
 ```
-下面的函数时从文件中读取num个buf
-
-tmp = AFreadData(file->fileAfsp,
-    file->numChannel*file->currentSample+cur,buf,num);
 
 
-AFreadData (AFILE *AFp, long int offs, float Dbuff[], int Nreq)
+2025.5.14
+### 编码器封装
+- 编码器封装完成，但是目前缺少超级帧的实现部分
+由于我在现有项目中导入超级帧模块后报错很多，`因此考虑将超级帧部分单独封装为一个动态库，供编解码器调用`
 
-{
-  int Nout;
+`考虑在git上新建一个仓库，用来负责超级帧部分的动态库打包`
 
-  Nout = AFfReadData (AFp, offs, Dbuff, Nreq);
-
-  return Nout;
-}
-
-int
-AFfReadData (AFILE *AFp, long int offs, float Dbuff[], int Nreq)
-
-{
-  int i, Nb, Nv, Nr, Nout;
-
-/* Check the operation  */
-  assert (AFp->Op == FO_RO);
-  assert (! AFp->Error);
-
-/* Fill in zeros at the beginning of data */
-  Nb = (int) MAXV (0, MINV (-offs, Nreq));
-  for (i = 0; i < Nb; ++i) {
-    Dbuff[i] = 0.0F;
-    ++offs;
-  }
-  Nout = Nb;
-
-/* Position the file */
-  AFp->Error = AFposition (AFp, offs);
-
-/* The file reading routines expect that the file is positioned at the data
-   to be read.  They use the following AFp fields:
-     AFp->fp - file pointer
-     AFp->Swapb - data swap indicator
-     AFp->ScaleF - data scaling factor
-  An error is detected on the outside by calling ferror() or by checking
-  AFp->Error (for text data files).
-
-  Errors:  Nr < Nreq - Nb  && ferror or AFp->Error set
-  EOF:     Nr < Nreq - Nb  && ferror and AFp->Error not set
-
-  This routine updates the following AFp values
-    AFp->Error - Set for an error
-    AFp->Isamp - Current data sample.  This value is set to the current
-      position before reading and incremented by the number of samples read.
-    AFp->Nsamp - Number of samples (updated if not defined initially and EOF
-      is detected)
-*/
-
-/* Transfer data from the file */
-  if (AFp->Nsamp == AF_NSAMP_UNDEF)
-    Nv = Nreq - Nout;
-  else
-    Nv = (int) MINV (Nreq - Nout, AFp->Nsamp - offs);
-
-  if (! AFp->Error && Nv > 0) {
-    Nr = (*AF_Read[AFp->Format]) (AFp, &Dbuff[Nb], Nv);
-    Nout += Nr;
-    AFp->Isamp += Nr;
-
-/* Check for errors */
-    if (Nr < Nv) {
-      if (ferror (AFp->fp)) {
-	UTsysMsg ("AFfReadData - %s %ld", AFM_ReadErrOffs, AFp->Isamp);
-	AFp->Error = AF_IOERR;
-      }
-      else if (AFp->Error)
-	UTwarn ("AFfReadData - %s %ld", AFM_ReadErrOffs, AFp->Isamp);
-      else if (AFp->Nsamp != AF_NSAMP_UNDEF) {
-	UTwarn ("AFfReadData - %s %ld", AFM_UEoFOffs, AFp->Isamp);
-	AFp->Error = AF_UEOF;
-      }
-      else
-	AFp->Nsamp = AFp->Isamp;
-    }
-  }
-
-/* Zeros at the end of the file */
-  for (i = Nout; i < Nreq; ++i)
-    Dbuff[i] = 0.0F;
-
-  if (AFp->Error && (AFoptions ())->ErrorHalt)
-    exit (EXIT_FAILURE);
-
-  return Nout;
-}
-
-现在我不读取文件，而是利用const unsigned char* raw_pcm_frame表示采集到的音频源数据，进行类似上述的处理如下,那么两者等价吗
-
-
-p = raw_pcm_frame + i * 2;
-sample = (int16_t)(p[0] | (p[1] << 8));
-buf = sample / 32768.0f;

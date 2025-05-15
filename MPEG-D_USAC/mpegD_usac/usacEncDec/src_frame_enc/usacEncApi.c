@@ -52,6 +52,7 @@
 #include <libtsp/AFpar.h>
 #include "austream.h"  
 #include "libxaace_export.h"
+#include "libsuperframe_export.h"
 
 /* ---------- declarations ---------- */
 
@@ -163,6 +164,59 @@ struct AudioFileStruct          /* audio file handle */
     int multiC;                   /* 1 if more than 2 Channels present */
     int numC;                     /* number of Channels for multi channel use */
 };
+
+
+struct encode_obj_ {
+    /*** 控制参数 ***/
+    int sbrenable;
+    int numChannel;
+    int frameNumSample;
+    int downSampleRatio;
+    int upSampleRatio;
+    int delayTotal;
+    int NcoefRS;
+    int NcoefUS;
+    int delayBufferSamples;
+    int addlCoreDelay;
+    int delayEncFrames;
+    int numAPRframes;
+    int frame;
+    int requestIPF;
+    int enableIPF;
+    int numChannelBS;
+    int track_count_total;
+    int err;
+    int nSamplesProcessed;
+    int input_file_flag;
+    int output_file_flag;
+
+    /*** 滤波器指针 ***/
+    float* hRS;
+    float* hUS;
+
+    /*** 通道缓冲区 ***/
+    float** sampleBuf;
+    float** sampleBufRS;
+    float** sampleBufRSold;
+    float** sampleBufUS;
+    float** sampleBufUSold;
+    float** additionalCoreDelayBuffer;
+    float** tmpBufRS;
+    float** tmpBufUS;
+    float** encSampleBuf;
+    float** reSampleBuf;
+
+    /*** 编码帧数据与输出 ***/
+    ENC_FRAME_DATA frameData;
+    HANDLE_BSBITBUFFER* au_buffers;
+    HANDLE_STREAMPROG outprog;
+
+    /*** 文件与采样信息 ***/
+    AudioFile* audioFile;
+    HANDLE_STREAMFILE outfile;
+    long fSampleLong;
+};
+
 
 /* SSC data */
 #ifdef EXT2PAR
@@ -1863,7 +1917,7 @@ encode_obj* xheaace_create(encode_para* encode_para) {
         "-vv"
     };
 
-    encode_obj* ctx = (encode_obj*)malloc(sizeof(encode_obj));
+    encode_obj* ctx = (encode_obj*)malloc(sizeof(struct encode_obj_));
     int              error = 0;
     char             wav_InputFile[FILENAME_MAX] = { 0 };
     char             mp4_OutputFile[FILENAME_MAX] = { 0 };
@@ -2439,7 +2493,7 @@ encode_obj* xheaace_create(encode_para* encode_para) {
 
 }
 
-int xheaace_encode_frame(encode_obj* ctx, const unsigned char* raw_pcm_frame) {
+int xheaace_encode_frame(encode_obj* ctx, const unsigned char* raw_pcm_frame, unsigned char** out_encoded_data, int* out_encoded_size) {
     USAC_SYNCFRAME_TYPE usacSyncState = USAC_SYNCFRAME_NOSYNC;
     #define SAMPLE_BUF_SIZE 16384 
     int ch,i;
@@ -2451,6 +2505,10 @@ int xheaace_encode_frame(encode_obj* ctx, const unsigned char* raw_pcm_frame) {
     unsigned char* encoded_data;
     float* raw_data;
     float buf[SAMPLE_BUF_SIZE];
+    size_t byte_size;
+
+    *out_encoded_data = NULL;
+    *out_encoded_size = 0;
 
     /* 20060107 */
     if (ctx->sbrenable) {
@@ -2579,8 +2637,17 @@ int xheaace_encode_frame(encode_obj* ctx, const unsigned char* raw_pcm_frame) {
             HANDLE_STREAM_AU au = StreamFileAllocateAU(0);
             au->numBits = BsBufferNumBit(ctx->au_buffers[i]);
             au->data = BsBufferGetDataBegin(ctx->au_buffers[i]);
-
             encoded_data = (unsigned char*)au->data;
+
+            byte_size = (au->numBits + 7) / 8;
+
+            *out_encoded_data = (unsigned char*)malloc(byte_size);
+            memcpy(*out_encoded_data, au->data, byte_size);
+            if (au->numBits % 8 != 0) {
+                uint8_t mask = 0xFF >> (8 - (au->numBits % 8));
+                (*out_encoded_data)[byte_size - 1] &= mask;
+            }
+            *out_encoded_size = byte_size;
 
             switch (usacSyncState) {
             case USAC_SYNCFRAME_IMMEDIATE_PLAY_OUT_FRAME:
@@ -2612,6 +2679,8 @@ int xheaace_encode_frame(encode_obj* ctx, const unsigned char* raw_pcm_frame) {
 #ifdef _DEBUG
     //assert(ctx->nSamplesProcessed == ctx->frame * (long)ctx->frameNumSample * ctx->downSampleRatio / ctx->upSampleRatio - ctx->delayBufferSamples);
 #endif
+
+    return 1;
 
 }
 
@@ -2767,7 +2836,7 @@ long find_data_chunk(FILE* wav_file) {
 /* ##                 MPEG USAC encoder API functions               ## */
 /* ###################################################################### */
 
-#define AUDIO_BITRATE        96000
+#define AUDIO_BITRATE        64000
 #define AUDIO_SAMPLE_RATE    44100
 #define AUDIO_CHANNELS       2
 #define AUDIO_PCM_WIDTH      16
@@ -2778,50 +2847,64 @@ long find_data_chunk(FILE* wav_file) {
 #define Handle_frame_length  256*AUDIO_CHANNELS*AUDIO_PCM_WIDTH 
 #define Super_frame_length   AUDIO_BITRATE*AUDIO_SUPERFRAME/8000
 
-//int main() {
-//    const char* input_wav_path = "input.wav";
-//    const char* encoded_wav_path = "encoded.mp4";
-//    FILE* input_wav_file = fopen(input_wav_path, "rb");
-//    FILE* encoded_wav_file = NULL;
-//    encode_obj* ctx;
-//    encode_para enc_para;
-//    unsigned char* buffer = (unsigned char*)malloc(Handle_frame_length);
-//    int i = 0;
-//    long data_offset = find_data_chunk(input_wav_file);
-// 
-//
-//    memset(&enc_para, 0, sizeof(encode_para)); 
-//    enc_para.bitrate = AUDIO_BITRATE;
-//    enc_para.ui_pcm_wd_sz = AUDIO_PCM_WIDTH;
-//    enc_para.ui_samp_freq = AUDIO_SAMPLE_RATE;
-//    enc_para.ui_num_chan = AUDIO_CHANNELS;
-//    enc_para.sbr_flag = AUDIO_SBR_FLAG;
-//    enc_para.mps_flag = AUDIO_MPS_FLAG;
-//    enc_para.Super_frame_mode = AUDIO_SUPERFRAME;
-//    enc_para.input_file_flag = 0;
-//    enc_para.output_file_flag = 1;
-//    if (enc_para.output_file_flag) {
-//        encoded_wav_file = fopen(encoded_wav_path, "wb");
-//    }
-//    ctx = xheaace_create(&enc_para);
-//
-//
-//    fseek(input_wav_file, data_offset, SEEK_SET);
-//
-//    while (i < 600) {
-//        fread(buffer, 1, Handle_frame_length, input_wav_file);
-//        xheaace_encode_frame(ctx, buffer);
-//        fprintf(stdout, "\rframe %4d", ctx->frame);
-//        fflush(stdout);
-//        i++;
-//    }
-//
-//    xheaace_delete(ctx, encoded_wav_path);
-//    fclose(input_wav_file);
-//    if (enc_para.output_file_flag) {
-//        fclose(encoded_wav_file);
-//    }
-//    free(buffer);
-//    return 0;
-//}
+int main() {
+    const char* input_wav_path = "input.wav";
+    const char* encoded_wav_path = "encoded.mp4";
+    FILE* input_wav_file = fopen(input_wav_path, "rb");
+    FILE* encoded_wav_file = NULL;
+    encode_obj* ctx;
+    encode_para enc_para;
+    unsigned char* encoded_data = NULL;
+    int encoded_size = 0;
+
+    unsigned char* buffer = (unsigned char*)malloc(Handle_frame_length);
+    int i = 0;
+    long data_offset = find_data_chunk(input_wav_file);
+    superframe_encoder_t* super_ctx;
+    uint8_t* superframe_output = (uint8_t*)malloc(Super_frame_length);
+ 
+
+    memset(&enc_para, 0, sizeof(encode_para)); 
+    enc_para.bitrate = AUDIO_BITRATE;
+    enc_para.ui_pcm_wd_sz = AUDIO_PCM_WIDTH;
+    enc_para.ui_samp_freq = AUDIO_SAMPLE_RATE;
+    enc_para.ui_num_chan = AUDIO_CHANNELS;
+    enc_para.sbr_flag = AUDIO_SBR_FLAG;
+    enc_para.mps_flag = AUDIO_MPS_FLAG;
+    enc_para.Super_frame_mode = AUDIO_SUPERFRAME;
+    enc_para.input_file_flag = 0;
+    enc_para.output_file_flag = 1;
+    if (enc_para.output_file_flag) {
+        encoded_wav_file = fopen(encoded_wav_path, "wb");
+    }
+    ctx = xheaace_create(&enc_para);
+    super_ctx = create_superframe_encoder(Super_frame_length);
+
+
+    fseek(input_wav_file, data_offset, SEEK_SET);
+
+    while (i < 600) {
+        fread(buffer, 1, Handle_frame_length, input_wav_file);
+        if (xheaace_encode_frame(ctx, buffer, &encoded_data, &encoded_size) == 1) {
+            if (encode_superframe(super_ctx, encoded_data, encoded_size, superframe_output) == 1) {
+                fprintf(stdout, "superframe successful\n" );
+                fflush(stdout);
+            }
+        }
+        fprintf(stdout, "\rframe %4d\n", ctx->frame);
+        fflush(stdout);
+        i++;
+    }
+
+    free(encoded_data);
+    free(superframe_output);
+    xheaace_delete(ctx, encoded_wav_path);
+    destroy_superframe_encoder(super_ctx);
+    fclose(input_wav_file);
+    if (enc_para.output_file_flag) {
+        fclose(encoded_wav_file);
+    }
+    free(buffer);
+    return 0;
+}
 
