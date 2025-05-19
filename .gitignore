@@ -1,3 +1,13 @@
 libmpeg/sequence
 libusac/encoded
 libusac/decoded
+
+dll_superframe/.vs
+dll_superframe/dll_superframe/x64
+
+Test/.vs
+Test/Test/x64
+Test/x64/Debug/*
+!Test/x64/Debug/input.wav
+
+
