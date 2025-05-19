@@ -29,8 +29,11 @@ extern "C" {
 
     LIBXAACENC_API int xheaace_encode_frame(encode_obj* encode_obj, const unsigned char* raw_pcm_frame, unsigned char** out_encoded_data, int* out_encoded_size);
 
-    LIBXAACENC_API int xheaace_delete(encode_obj* ctx, char* encoded_file);
+    LIBXAACENC_API int xheaace_delete(encode_obj* ctx, const char* encoded_file);
 
+    LIBXAACENC_API int xheaace_delete(encode_obj* ctx, const char* encoded_file);
+
+    LIBXAACENC_API signed int xheaace_get_frame_count(encode_obj* pv_encode_obj);
 
 #ifdef __cplusplus
 }

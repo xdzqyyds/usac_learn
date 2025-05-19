@@ -1,7 +1,13 @@
 #pragma once
-
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#ifndef __STDBOOL_H
+#define __STDBOOL_H
+#define bool    int
+#define true    1
+#define false   0
 #endif
 
 #ifdef BUILDING_LIBSUPERFRAME
@@ -9,7 +15,6 @@ extern "C" {
 #else
 #define LIBSUPERFRAME_API __declspec(dllimport)
 #endif
-    typedef enum { true = 1, false = 0 }bool;
 
     LIBSUPERFRAME_API typedef struct {
         uint8_t* data;              // 超级帧数据缓冲区
