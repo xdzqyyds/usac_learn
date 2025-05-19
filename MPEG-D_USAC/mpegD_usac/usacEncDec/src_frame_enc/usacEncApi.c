@@ -167,7 +167,7 @@ struct AudioFileStruct          /* audio file handle */
 
 
 struct encode_obj_ {
-    /*** ¿ØÖÆ²ÎÊý ***/
+    /*** ï¿½ï¿½ï¿½Æ²ï¿½ï¿½ï¿½ ***/
     int sbrenable;
     int numChannel;
     int frameNumSample;
@@ -190,11 +190,11 @@ struct encode_obj_ {
     int input_file_flag;
     int output_file_flag;
 
-    /*** ÂË²¨Æ÷Ö¸Õë ***/
+    /*** ï¿½Ë²ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ ***/
     float* hRS;
     float* hUS;
 
-    /*** Í¨µÀ»º³åÇø ***/
+    /*** Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ***/
     float** sampleBuf;
     float** sampleBufRS;
     float** sampleBufRSold;
@@ -206,12 +206,12 @@ struct encode_obj_ {
     float** encSampleBuf;
     float** reSampleBuf;
 
-    /*** ±àÂëÖ¡Êý¾ÝÓëÊä³ö ***/
+    /*** ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ***/
     ENC_FRAME_DATA frameData;
     HANDLE_BSBITBUFFER* au_buffers;
     HANDLE_STREAMPROG outprog;
 
-    /*** ÎÄ¼þÓë²ÉÑùÐÅÏ¢ ***/
+    /*** ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ ***/
     AudioFile* audioFile;
     HANDLE_STREAMFILE outfile;
     long fSampleLong;
@@ -909,17 +909,17 @@ static int setupUsacEncoder(
 #endif
 
 #ifdef _WIN32
-        basename = strstr(globalPath, "usacEnc.exe");
+        //basename = strstr(globalPath, "usacEnc.exe");
 #else
         basename = strstr(globalPath, "usacEnc");
 #endif
 
-        if (basename == 0) {
-            CommonExit(1, "Error initializing USAC Encoder.");
-        }
-        else {
-            strcpy(basename, "\0");
-        }
+        //if (basename == 0) {
+        //    CommonExit(1, "Error initializing USAC Encoder.");
+        //}
+        //else {
+        //    strcpy(basename, "\0");
+        //}
 
         /* set the binary names */
         fprintf(stdout, "Collecting executables...\n");
@@ -2684,7 +2684,7 @@ int xheaace_encode_frame(encode_obj* ctx, const unsigned char* raw_pcm_frame, un
 
 }
 
-int xheaace_delete(encode_obj* ctx, char* encoded_file) {
+int xheaace_delete(encode_obj* ctx, const char* encoded_file) {
 
     int ch,i;
 
@@ -2704,7 +2704,7 @@ int xheaace_delete(encode_obj* ctx, char* encoded_file) {
     }
 
     /* close audio file */
-    AudioClose(ctx->audioFile);
+    //AudioClose(ctx->audioFile);
 
     /* editlist support for USAC */
 #ifdef EDITLIST_SUPPORT
@@ -2831,7 +2831,9 @@ long find_data_chunk(FILE* wav_file) {
     return -1;
 }
 
-
+signed int xheaace_get_frame_count(encode_obj* ctx) {
+    return ctx->frame;
+}
 /* ###################################################################### */
 /* ##                 MPEG USAC encoder API functions               ## */
 /* ###################################################################### */
