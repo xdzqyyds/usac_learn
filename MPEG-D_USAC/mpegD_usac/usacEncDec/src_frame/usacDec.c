@@ -141,6 +141,8 @@ Changes:
 #endif
 #endif
 
+#include <libxaacd_export.h>
+
 
 /* ###################################################################### */
 /* ##                     enums, struct and defines                    ## */
@@ -1354,9 +1356,20 @@ static USAC_RETURN_CODE execFullDecode(
   return error_usac;
 }
 
+
+decode_obj* xheaacd_create(decode_para* decode_para) {
+
+}
+
+
 /* ###################################################################### */
 /* ##                  MPEG USAC decoder main function                 ## */
 /* ###################################################################### */
+
+#define USE_SIMPLE_MAIN 1
+
+#if USE_SIMPLE_MAIN
+
 int main (int argc, char *argv[])
 {
   USAC_RETURN_CODE  error_usac                              = USAC_OK;
@@ -1527,3 +1540,33 @@ int main (int argc, char *argv[])
 
   return USAC_OK;
 }
+
+#else
+
+#define AUDIO_BITRATE        64000
+#define AUDIO_SAMPLE_RATE    44100
+#define AUDIO_CHANNELS       2
+#define AUDIO_PCM_WIDTH      16
+#define AUDIO_SBR_FLAG       0
+#define AUDIO_MPS_FLAG       0
+#define AUDIO_SUPERFRAME     400
+
+#define Handle_frame_length  256*AUDIO_CHANNELS*AUDIO_PCM_WIDTH 
+#define Super_frame_length   AUDIO_BITRATE*AUDIO_SUPERFRAME/8000
+
+
+int main() {
+    decode_para dec_para;
+    decode_obj* ctx;
+
+    memset(&dec_para, 0, sizeof(decode_para));
+    dec_para.bitrate = AUDIO_BITRATE;
+    dec_para.pcm_wd_sz = AUDIO_PCM_WIDTH;
+    dec_para.samp_freq = AUDIO_SAMPLE_RATE;
+    dec_para.num_chan = AUDIO_CHANNELS;
+    dec_para.sbr_flag = AUDIO_SBR_FLAG;
+    dec_para.mps_flag = AUDIO_MPS_FLAG;
+    dec_para.Super_frame_mode = AUDIO_SUPERFRAME;
+}
+
+#endif
