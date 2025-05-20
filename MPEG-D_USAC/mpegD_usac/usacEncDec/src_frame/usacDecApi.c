@@ -142,6 +142,8 @@ Changes:
 #endif
 
 #include <libxaacd_export.h>
+#include <streamfile.h>
+#include <decifc.h>
 
 
 
@@ -1357,8 +1359,389 @@ static USAC_RETURN_CODE execFullDecode(
   return error_usac;
 }
 
+static int setAprInfo(AUDIOPREROLL_INFO* aprInfo
+) {
+    int retVal = 0;
+
+    if (NULL == aprInfo) {
+        retVal = 1;
+    }
+    else {
+        aprInfo->numPrerollAU = 0;
+        aprInfo->nSamplesCoreCoderPreRoll = 0;
+    }
+
+    return retVal;
+}
+
+static int setElstInfo(ELST_INFO* elstInfo,
+    const double             startOffset,
+    const double             durationTotal,
+    const long               numOutSamples,
+    const unsigned long      framesDone,
+    const float              fSampleOut,
+    const int                useEditlist
+) {
+    int retVal = 0;
+
+    if (NULL == elstInfo) {
+        retVal = 1;
+    }
+    else {
+        if (useEditlist == 1) {
+            unsigned long tmpFileLength = numOutSamples * framesDone;
+            double tmpStartOffset = startOffset * fSampleOut + 0.5;
+            double tmpPlayTime = durationTotal * fSampleOut + 0.5;
+
+            elstInfo->truncLeft = (long)(tmpStartOffset);
+            elstInfo->totalSamplesElst = (long)(tmpPlayTime);
+            elstInfo->totalSamplesFile = tmpFileLength;
+
+            if (elstInfo->totalSamplesElst <= elstInfo->totalSamplesFile) {
+                elstInfo->truncRight = ((elstInfo->totalSamplesFile - elstInfo->truncLeft) - elstInfo->totalSamplesElst);
+            }
+            else {
+                /* warning: edit list ist longer than actual file length */
+                elstInfo->truncRight = 0;
+            }
+        }
+        else {
+            elstInfo->truncLeft = 0;
+            elstInfo->truncRight = 0;
+            elstInfo->totalSamplesElst = 0;
+            elstInfo->totalSamplesFile = 0;
+        }
+    }
+
+    return retVal;
+}
+
+
 
 decode_obj* xheaacd_create(decode_para* decode_para) {
+    int argc = 11;
+    char* argv[] = {
+        "usacDec",
+        "-if", "encoded.mp4",
+        "-of", "output.wav",
+        "-bitdepth", "16",
+        "-nodrc",
+        "-cpo", "0",
+        "-v"
+    };
+
+    /* ###################################################################### */
+    /* ##                          main parameter                          ## */
+    /* ###################################################################### */
+
+    USAC_RETURN_CODE  error_usac = USAC_OK;
+    int               error_depth = 0;
+    int               versionMajor = 0;
+    int               versionMinor = 0;
+    int               versionRMbuild = 0;
+    char              mp4_InputFile[FILENAME_MAX] = { '\0' };
+    char              wav_OutputFile[FILENAME_MAX] = { '\0' };
+    char              cfg_FileName[FILENAME_MAX] = { '\0' };
+    int               error = 0;
+    char              inputFile_drcInterface[FILENAME_MAX] = { '\0' };
+    DRC_PARAMS        drcParams;
+    BIT_DEPTH         mpegUsacBitDepth = BIT_DEPTH_32_BIT;                       /* bitdepth of the MPEG-D USAC processing chain */
+    BIT_DEPTH         outputBitDepth = BIT_DEPTH_DEFAULT;                      /* bitdepth of output file */
+    USAC_CONFPOINT    mpegUsacCpoType = USAC_DEFAULT_OUTPUT;                    /* output mode type of the MPEG-D USAC decoder */
+    USAC_DECMODE      mpegUsacDecMode = USAC_DECMODE_DEFAULT;                   /* operation mode of the MPEG-D USAC decoder */
+    int               UseFftHarmonicTransposer = 0;
+    int               USACDecMode = 0;
+    int               epFlag = 0;
+    int               mainDebugLevel = 0;
+    int               useGlobalBinariesPath = 1;
+    RECYCLE_LEVEL     recycleLevel = RECYCLE_ACTIVE;                                                    /* defines the clean-up behavior */
+    VERBOSE_LEVEL     verboseLevel = VERBOSE_NONE;                                                      /* defines verbose level */
+    DEBUG_LEVEL       debugLevel = DEBUG_NORMAL;                                                        /* defines debuging level */
+    int               bUseWindowsCommands = 0;
+    char              binary_DrcDecoder[FILENAME_MAX] = { '\0' };                                 /* location: DRC module */
+    char              binary_WavCutter[FILENAME_MAX] = { '\0' };                                 /* location: wavCutter module */
+    char              outputFile_CoreDecoder[FILENAME_MAX] = "tmpFileUsacDec_core_output.wav";
+    char              outputFile_Drc[FILENAME_MAX] = "tmpFileUsacDec_drc.wav";
+    char              tmpFile_Drc_payload[FILENAME_MAX] = "tmpFileUsacDec_drc_payload_output.bit";
+    char              tmpFile_Drc_config[FILENAME_MAX] = "tmpFileUsacDec_drc_config_output.bit";
+    char              tmpFile_Loudness_config[FILENAME_MAX] = "tmpFileUsacDec_drc_loudness_output.bit";
+    char              logFileNames[FILENAME_MAX] = "framework.log";
+    char              globalBinariesPath[3 * FILENAME_MAX] = { '\0' };
+
+
+    /* ###################################################################### */
+    /* ##                      MP4Audio_DecodeFile                         ## */
+    /* ###################################################################### */
+#define MAX_TRACKS_PER_LAYER 50
+
+    int bWriteIEEEFloat;
+    AUDIOPREROLL_INFO aprInfo;
+    ELST_INFO         elstInfo;
+    static T_DECODERGENERAL faultData[MAX_TF_LAYER];
+    static HANDLE_DECODER_GENERAL hFault = &faultData[0];
+    const int         bitDebugLevel = 0;
+    HANDLE_STREAMFILE stream = NULL;
+    int         programNr = -1;
+    int progStart, progStop, progCnt;
+    HANDLE_STREAMPROG prog = NULL;
+    int  suitableTracks = 0;
+    AUDIO_SPECIFIC_CONFIG* asc;
+    int channelNum , tmp;
+    int numFC = 0;
+    int fCenter = 0;
+    int numSC = 0;
+    int numBC = 0;
+    int bCenter = 0;
+    int numLFE = 0;
+    char* aacDebugString = "";
+    int    monoFilesOut = 0;
+    DEC_DATA* decData = NULL;
+    DEC_DEBUG_DATA* decDebugData = NULL;
+    int         maxLayer = -1;
+    int  trackIdx;
+    int useEditlist[MAX_TRACKS_PER_LAYER] = { 0 };
+    double startOffset[MAX_TRACKS_PER_LAYER] = { 0.0 };
+    double durationTotal[MAX_TRACKS_PER_LAYER] = { 0.0 };
+
+
+    /* ###################################################################### */
+    /* ##                          main function                           ## */
+    /* ###################################################################### */
+
+    /* get version number */
+    error = getVersion(MPEGD_USAC_VERSION_NUMBER,
+        &versionMajor,
+        &versionMinor,
+        &versionRMbuild);
+    if (0 != error) {
+        //return PrintErrorCode(USAC_ERROR_FRAMEWORK_GENERIC, &error_depth, "Error intializing decoder.", NULL, verboseLevel, USAC_ERROR_POSITION_INFO);
+    }
+
+    /* parse command line parameters */
+    error = PrintCmdlineHelp(argc,
+        argv[0],
+        versionMajor,
+        versionMinor);
+    if (error) {
+        //return PrintErrorCode(USAC_OK, &error_depth, NULL, NULL, verboseLevel, USAC_ERROR_POSITION_INFO);
+    }
+
+    /* init DRC params */
+    error = setDrcParams(&drcParams);
+    if (error) {
+        //return PrintErrorCode(USAC_ERROR_DRC_INIT, &error_depth, "Error initializing DRC parameters.", NULL, verboseLevel, USAC_ERROR_POSITION_INFO);
+    }
+
+    error = GetCmdline(argc,
+        argv,
+        mp4_InputFile,
+        wav_OutputFile,
+        cfg_FileName,
+        &useGlobalBinariesPath,
+        &drcParams,
+        inputFile_drcInterface,
+        &mainDebugLevel,
+        &outputBitDepth,
+        &mpegUsacBitDepth,
+        &mpegUsacCpoType,
+        &mpegUsacDecMode,
+        &recycleLevel,
+        &verboseLevel,
+        &debugLevel);
+    if (error) {
+        //return PrintErrorCode(USAC_ERROR_FRAMEWORK_INVALIDCMD, &error_depth, "Error initializing MPEG USAC Audio decoder.", "Invalid command line parameters.", verboseLevel, USAC_ERROR_POSITION_INFO);
+    }
+
+    if (VERBOSE_LVL1 <= verboseLevel) {
+        fprintf(stdout, "\n");
+        fprintf(stdout, "::-----------------------------------------------------------------------------\n::    ");
+        fprintf(stdout, "Initializing I/O files...\n");
+        fprintf(stdout, "::-----------------------------------------------------------------------------\n");
+        fprintf(stdout, "\n");
+        fprintf(stdout, "Input bitstream:\n      %s\n\n", mp4_InputFile);
+        fprintf(stdout, "Output audio file:\n      %s\n", wav_OutputFile);
+
+        if (checkIfFileExists(wav_OutputFile, NULL)) {
+            fprintf(stderr, "\nWarning: Output File already exists: %s\n", wav_OutputFile);
+        }
+        fprintf(stdout, "\n");
+    }
+
+    /* Check if windows or linux commands should be used */
+    bUseWindowsCommands = useWindowsCommands();
+
+    MakeLogFileNames(wav_OutputFile,
+        logFileNames,
+        bUseWindowsCommands,
+        verboseLevel);
+
+    /* Remove all old temp files */
+    removeTempFiles(RECYCLE_ACTIVE,
+        bUseWindowsCommands,
+        verboseLevel);
+
+    SetDebugLevel(mainDebugLevel);
+
+    if (USAC_DECMODE_DEFAULT == mpegUsacDecMode) {
+        error = setupUsacDecoder(useGlobalBinariesPath,
+            globalBinariesPath,
+            cfg_FileName,
+            binary_DrcDecoder,
+            binary_WavCutter,
+            &error_depth,
+            verboseLevel);
+        if (error != 0) {
+            return error;
+        }
+    }
+
+    /* Set USAC Decoder Mode */
+    gUseFractionalDelayDecor = (USACDecMode & 1);
+    UseFftHarmonicTransposer = ((USACDecMode >> 1) & 1);
+
+    fprintf(stdout, "\n");
+    fprintf(stdout, "::-----------------------------------------------------------------------------\n::    ");
+    fprintf(stdout, "Decoding bit stream...\n");
+    fprintf(stdout, "::-----------------------------------------------------------------------------\n");
+    fprintf(stdout, "\n");
+
+
+
+
+
+
+    /* reduce internal processing chain to 24 bit resolution if requested*/
+    if (((mpegUsacBitDepth == BIT_DEPTH_24_BIT) ? 1 : 0 == 1)) {
+        bWriteIEEEFloat = 0;
+    }
+
+    /* initialize AudioPreRoll Info struct */
+    setAprInfo(&aprInfo);
+
+    /* initialize Elst Info struct */
+    setElstInfo(&elstInfo,
+        0.0,
+        0.0,
+        0,
+        0,
+        0.0f,
+        0);
+
+    /* initialize hFault */
+    memset(hFault, 0, MAX_TF_LAYER * sizeof(T_DECODERGENERAL));
+
+    BsInit(0, bitDebugLevel, 0);
+
+    stream = StreamFileOpenRead(mp4_InputFile, FILETYPE_AUTO); if (stream == NULL) goto bail;
+
+    if (programNr != -1) {      /* specific program selected */
+        progStart = programNr;
+        progStop = programNr + 1;
+        DebugPrintf(1, "Selected program: %d", progStart);
+    }
+    else {                      /* no specific program selected -> loop over all programs */
+        progStart = 0;
+        progStop = StreamFileGetProgramCount(stream);
+        if (progStop > 1) {       /* more than one program in stream */
+            DebugPrintf(1, "No specific program selected -> looping over all programs");
+        }
+        DebugPrintf(1, "\nNumber of programs: %d", progStop);
+    }
+
+    //for (progCnt = progStart; progCnt < progStop; progCnt++) {
+    progCnt = progStart;
+    programNr = progCnt;
+    DebugPrintf(1, "Decoding program: %d", programNr);
+
+    prog = StreamFileGetProgram(stream, programNr); if (prog == NULL) goto bail;
+    suitableTracks = prog->trackCount;
+
+    DebugPrintf(1, "\nFound MP4 file with  %d suitable Tracks  ", suitableTracks);
+
+    if (!suitableTracks) {
+        return -1;
+    }
+
+    asc = &(prog->decoderConfig[0].audioSpecificConfig);
+
+    switch (asc->audioDecoderType.value) {
+#ifdef AAC_ELD
+    case ER_AAC_ELD:
+        channelNum = asc->channelConfiguration.value;
+        break;
+#endif
+
+    case USAC:
+        channelNum = get_channel_number_USAC(&asc->specConf.usacConfig,
+            &numFC, &fCenter, &numSC, &numBC, &bCenter, &numLFE, NULL);
+        break;
+    default:
+        if (asc->channelConfiguration.value == 0) {
+            select_prog_config(asc->specConf.TFSpecificConfig.progConfig,
+                (asc->specConf.TFSpecificConfig.frameLength.value ? 960 : 1024),
+                hFault->hResilience,
+                hFault->hEscInstanceData,
+                aacDebugString['v']);
+        }
+        channelNum = get_channel_number(asc->channelConfiguration.value,
+            asc->specConf.TFSpecificConfig.progConfig,
+            &numFC, &fCenter, &numSC, &numBC, &bCenter, &numLFE, NULL);
+        break;
+    }
+
+    if (channelNum > 2) {
+        CommonWarning("No standards for putting %ld Channels into 1 File -> Using multiple files\n", channelNum);
+        monoFilesOut = 1;
+    }
+
+    /*
+      instantiate proper decoder for decoderconfig
+    */
+
+    decData = (DEC_DATA*)calloc(1, sizeof(DEC_DATA));
+    decDebugData = (DEC_DEBUG_DATA*)calloc(1, sizeof(DEC_DEBUG_DATA));
+
+    /* suitableTracks was initally total no of tracks
+       this function stores total no of tracks in decData and
+       returns no of tracks needed for decoding up to mayLayer */
+    tmp = asc->channelConfiguration.value;
+    asc->channelConfiguration.value = channelNum;
+
+    suitableTracks = frameDataInit(prog->allTracks,
+        suitableTracks,
+        maxLayer,
+        prog->decoderConfig,
+        decData);
+    asc->channelConfiguration.value = tmp;
+
+    if (suitableTracks <= 0) {
+        CommonWarning("Error during framework initialisation");
+        goto bail;
+    }
+
+    /* get editlist info */
+    for (trackIdx = 0; trackIdx < suitableTracks; trackIdx++) {
+        double tmpStart, tmpDuration;
+
+        useEditlist[trackIdx] = 0;
+        if (0 == StreamFileGetEditlist(prog, trackIdx, &tmpStart, &tmpDuration)) {
+            startOffset[trackIdx] = tmpStart;
+            durationTotal[trackIdx] = tmpDuration;
+            if (tmpDuration > -1) {
+                useEditlist[trackIdx] = 1;
+            }
+        }
+    }
+
+    if (verboseLevel > 0) {
+        fprintf(stdout, "\nDecoding ...\n");
+    }
+
+
+
+bail:
+
+    return 0;
 
 }
 
@@ -1394,6 +1777,8 @@ int main() {
     dec_para.sbr_flag = AUDIO_SBR_FLAG;
     dec_para.mps_flag = AUDIO_MPS_FLAG;
     dec_para.Super_frame_mode = AUDIO_SUPERFRAME;
+
+    ctx = xheaacd_create(&dec_para);
 }
 
 #endif
