@@ -216,3 +216,44 @@ if (StreamFileClose(outfile))
 `考虑在git上新建一个仓库，用来负责超级帧部分的动态库打包`
 
 `已经完成了封装，现在先提交pr，然后再在本地新建一个项目用于测试`
+
+
+
+
+
+2025.5.20
+### 开始封装解码器模块
+
+- `main --> execFullDecode --> MP4Audio_DecodeFile(内部包含每帧处理的函数)`
+
+
+### 音频裁剪模块
+
+- `-if tmpFileUsacDec_core_output.wav -of output.wav -bitdepth 16`
+
+
+- `wavCutterCmdl.exe` 的作用似乎是将`pcm_f32le` 转换为 `pcm_s16le`
+- 那么这是否意味着可以在解码器中自己编写一段代码，用于处理解码后的裸码流数据，将其转换为`pcm_s16le`格式
+- `int16 Sample = (int16_t)(fmaxf(-1.0f, fminf(1.0f, floatSample)) * 32767.0f);`
+- `int16_t intSample = (int16_t)(fminf(fmaxf(fSample, -1.0f), 1.0f) * 32768.0f);`
+
+  - 在编码端也实现过从int转换为float的函数
+  ```
+  void convert_raw_pcm_to_float_simple(const unsigned char* raw_pcm_frame,
+      float* buf,
+      int num_samples)
+  {
+      int i;
+      const unsigned char* p;
+      int16_t sample;
+  
+      for (i = 0; i < num_samples; ++i) {
+          p = raw_pcm_frame + i * 2;
+          sample = (int16_t)(p[0] | (p[1] << 8));
+          buf[i] = sample;
+      }
+  }
+  ```
+  - 可作为参考
+
+
