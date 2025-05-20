@@ -141,6 +141,9 @@ Changes:
 #endif
 #endif
 
+#include <libxaacd_export.h>
+
+
 
 /* ###################################################################### */
 /* ##                     enums, struct and defines                    ## */
@@ -235,7 +238,7 @@ typedef struct _DRC_PARAMS {
   int drcEffectTypeRequestPresent;
 } DRC_PARAMS;
 
-const char usac_binaries[][3][FILENAME_MAX] =
+static const char usac_binaries[][3][FILENAME_MAX] =
 {
 /*
   module description                      Windows executable                      Unix executable
@@ -245,7 +248,7 @@ const char usac_binaries[][3][FILENAME_MAX] =
   {{"wavCutter"},                         {"wavCutterCmdl.exe"},                  {"wavCutterCmdl"}}
 };
 
-int gUseFractionalDelayDecor = 0;           /* used as extern int in decoder_usac.c */
+static int gUseFractionalDelayDecor = 0;           /* used as extern int in decoder_usac.c */
 
 /* ###################################################################### */
 /* ##                 MPEG USAC decoder static functions               ## */
@@ -897,7 +900,7 @@ static int checkIfFileExists(
 }
 
 /* removes .wav suffix from filename */
-int removeWavExtension(
+static int removeWavExtension(
             char                             *filename
 ) {
   char* wavSuffix = strstr(filename, ".wav");
@@ -913,7 +916,7 @@ int removeWavExtension(
 }
 
 /* call binary - wrapper for system() */
-int callBinary(
+static int callBinary(
             const char                       *exe_2call,
             const char                       *exe_description,
             const VERBOSE_LEVEL               verboseLevel
@@ -1354,183 +1357,43 @@ static USAC_RETURN_CODE execFullDecode(
   return error_usac;
 }
 
+
+decode_obj* xheaacd_create(decode_para* decode_para) {
+
+}
+
+
 /* ###################################################################### */
 /* ##                  MPEG USAC decoder main function                 ## */
 /* ###################################################################### */
 
-#define USE_SIMPLE_MAIN 1
+#define USE_SIMPLE_MAIN 0
+
+#define AUDIO_BITRATE        64000
+#define AUDIO_SAMPLE_RATE    44100
+#define AUDIO_CHANNELS       2
+#define AUDIO_PCM_WIDTH      16
+#define AUDIO_SBR_FLAG       0
+#define AUDIO_MPS_FLAG       0
+#define AUDIO_SUPERFRAME     400
+
+#define Handle_frame_length  256*AUDIO_CHANNELS*AUDIO_PCM_WIDTH 
+#define Super_frame_length   AUDIO_BITRATE*AUDIO_SUPERFRAME/8000
 
 #if USE_SIMPLE_MAIN
 
-int main (int argc, char *argv[])
-{
-  USAC_RETURN_CODE  error_usac                              = USAC_OK;
-  int               error_depth                             = 0;
-  int               versionMajor                            = 0;
-  int               versionMinor                            = 0;
-  int               versionRMbuild                          = 0;
-  char              mp4_InputFile[FILENAME_MAX]             = {'\0'};
-  char              wav_OutputFile[FILENAME_MAX]            = {'\0'};
-  char              cfg_FileName[FILENAME_MAX]              = {'\0'};
-  int               error                                   = 0;
-  char              inputFile_drcInterface[FILENAME_MAX]    = {'\0'};
-  DRC_PARAMS        drcParams;
-  BIT_DEPTH         mpegUsacBitDepth                        = BIT_DEPTH_32_BIT;                       /* bitdepth of the MPEG-D USAC processing chain */
-  BIT_DEPTH         outputBitDepth                          = BIT_DEPTH_DEFAULT;                      /* bitdepth of output file */
-  USAC_CONFPOINT    mpegUsacCpoType                         = USAC_DEFAULT_OUTPUT;                    /* output mode type of the MPEG-D USAC decoder */
-  USAC_DECMODE      mpegUsacDecMode                         = USAC_DECMODE_DEFAULT;                   /* operation mode of the MPEG-D USAC decoder */
-  int               UseFftHarmonicTransposer                = 0;
-  int               USACDecMode                             = 0;
-  int               epFlag                                  = 0;
-  int               mainDebugLevel                          = 0;
-  int               useGlobalBinariesPath                   = 1;
-  RECYCLE_LEVEL     recycleLevel = RECYCLE_ACTIVE;                                                    /* defines the clean-up behavior */
-  VERBOSE_LEVEL     verboseLevel = VERBOSE_NONE;                                                      /* defines verbose level */
-  DEBUG_LEVEL       debugLevel = DEBUG_NORMAL;                                                        /* defines debuging level */
-  int               bUseWindowsCommands                     = 0;
-  char              binary_DrcDecoder[FILENAME_MAX]         = {'\0'};                                 /* location: DRC module */
-  char              binary_WavCutter[FILENAME_MAX]          = {'\0'};                                 /* location: wavCutter module */
-  char              outputFile_CoreDecoder[FILENAME_MAX]    = "tmpFileUsacDec_core_output.wav";
-  char              outputFile_Drc[FILENAME_MAX]            = "tmpFileUsacDec_drc.wav";
-  char              tmpFile_Drc_payload[FILENAME_MAX]       = "tmpFileUsacDec_drc_payload_output.bit";
-  char              tmpFile_Drc_config[FILENAME_MAX]        = "tmpFileUsacDec_drc_config_output.bit";
-  char              tmpFile_Loudness_config[FILENAME_MAX]   = "tmpFileUsacDec_drc_loudness_output.bit";
-  char              logFileNames[FILENAME_MAX]              = "framework.log";
-  char              globalBinariesPath[3 * FILENAME_MAX]    = {'\0'};
+int main() {
+    decode_para dec_para;
+    decode_obj* ctx;
 
-  /* get version number */
-  error = getVersion(MPEGD_USAC_VERSION_NUMBER,
-                     &versionMajor,
-                     &versionMinor,
-                     &versionRMbuild);
-  if (0 != error) {
-    return PrintErrorCode(USAC_ERROR_FRAMEWORK_GENERIC, &error_depth, "Error intializing decoder.", NULL, verboseLevel, USAC_ERROR_POSITION_INFO);
-  }
-
-  /* parse command line parameters */
-  error = PrintCmdlineHelp(argc,
-                           argv[0],
-                           versionMajor,
-                           versionMinor);
-  if (error) {
-    return PrintErrorCode(USAC_OK, &error_depth, NULL, NULL, verboseLevel, USAC_ERROR_POSITION_INFO);
-  }
-
-  /* init DRC params */
-  error = setDrcParams(&drcParams);
-  if (error) {
-    return PrintErrorCode(USAC_ERROR_DRC_INIT, &error_depth, "Error initializing DRC parameters.", NULL, verboseLevel, USAC_ERROR_POSITION_INFO);
-  }
-
-  error = GetCmdline(argc,
-                     argv,
-                     mp4_InputFile,
-                     wav_OutputFile,
-                     cfg_FileName,
-                     &useGlobalBinariesPath,
-                     &drcParams,
-                     inputFile_drcInterface,
-                     &mainDebugLevel,
-                     &outputBitDepth,
-                     &mpegUsacBitDepth,
-                     &mpegUsacCpoType,
-                     &mpegUsacDecMode,
-                     &recycleLevel,
-                     &verboseLevel,
-                     &debugLevel);
-  if (error) {
-    return PrintErrorCode(USAC_ERROR_FRAMEWORK_INVALIDCMD, &error_depth, "Error initializing MPEG USAC Audio decoder.", "Invalid command line parameters.", verboseLevel, USAC_ERROR_POSITION_INFO);
-  }
-
-  if (VERBOSE_LVL1 <= verboseLevel) {
-    fprintf(stdout, "\n");
-    fprintf(stdout, "::-----------------------------------------------------------------------------\n::    ");
-    fprintf(stdout, "Initializing I/O files...\n");
-    fprintf(stdout, "::-----------------------------------------------------------------------------\n");
-    fprintf(stdout, "\n" );
-    fprintf(stdout, "Input bitstream:\n      %s\n\n", mp4_InputFile);
-    fprintf(stdout, "Output audio file:\n      %s\n", wav_OutputFile);
-
-    if (checkIfFileExists(wav_OutputFile, NULL)) {
-      fprintf(stderr, "\nWarning: Output File already exists: %s\n", wav_OutputFile);
-    }
-    fprintf(stdout, "\n");
-  }
-
-  /* Check if windows or linux commands should be used */
-  bUseWindowsCommands = useWindowsCommands();
-
-  MakeLogFileNames(wav_OutputFile,
-                   logFileNames,
-                   bUseWindowsCommands,
-                   verboseLevel);
-
-  /* Remove all old temp files */
-  removeTempFiles(RECYCLE_ACTIVE,
-                  bUseWindowsCommands,
-                  verboseLevel);
-
-  SetDebugLevel(mainDebugLevel);
-
-  if (USAC_DECMODE_DEFAULT == mpegUsacDecMode) {
-    error = setupUsacDecoder(useGlobalBinariesPath,
-                             globalBinariesPath,
-                             cfg_FileName,
-                             binary_DrcDecoder,
-                             binary_WavCutter,
-                             &error_depth,
-                             verboseLevel);
-    if (error != 0) {
-      return error;
-    }
-  }
-
-  /* Set USAC Decoder Mode */
-  gUseFractionalDelayDecor = (USACDecMode & 1);
-  UseFftHarmonicTransposer = ((USACDecMode >> 1) & 1);
-
-  fprintf(stdout, "\n");
-  fprintf(stdout, "::-----------------------------------------------------------------------------\n::    ");
-  fprintf(stdout, "Decoding bit stream...\n" );
-  fprintf(stdout, "::-----------------------------------------------------------------------------\n");
-  fprintf(stdout, "\n");
-
-  error_usac = execFullDecode(mp4_InputFile,
-                              outputFile_CoreDecoder,
-                              outputFile_Drc,
-                              wav_OutputFile,
-                              inputFile_drcInterface,
-                              tmpFile_Drc_payload,
-                              tmpFile_Drc_config,
-                              tmpFile_Loudness_config,
-                              binary_DrcDecoder,
-                              binary_WavCutter,
-                              logFileNames,
-                              &error_depth,
-                              &drcParams,
-                              mainDebugLevel,
-                              mpegUsacBitDepth,
-                              outputBitDepth,
-                              mpegUsacCpoType,
-                              mpegUsacDecMode,
-                              verboseLevel,
-                              debugLevel);
-  if (USAC_OK != error_usac) {
-    return PrintErrorCode(error_usac, &error_depth, "Error executing MPEG-D USAC decoder.", NULL, verboseLevel, USAC_ERROR_POSITION_INFO);
-  }
-
-  StatisticsPrint(epFlag);
-
-  /**********************************/
-  /* clean up                       */
-  /**********************************/
-  removeTempFiles(recycleLevel,
-                  bUseWindowsCommands,
-                  verboseLevel);
-
-  fprintf(stdout, "\n>>    Decoding successfully completed!\n\n");
-
-  return USAC_OK;
+    memset(&dec_para, 0, sizeof(decode_para));
+    dec_para.bitrate = AUDIO_BITRATE;
+    dec_para.pcm_wd_sz = AUDIO_PCM_WIDTH;
+    dec_para.samp_freq = AUDIO_SAMPLE_RATE;
+    dec_para.num_chan = AUDIO_CHANNELS;
+    dec_para.sbr_flag = AUDIO_SBR_FLAG;
+    dec_para.mps_flag = AUDIO_MPS_FLAG;
+    dec_para.Super_frame_mode = AUDIO_SUPERFRAME;
 }
 
 #endif

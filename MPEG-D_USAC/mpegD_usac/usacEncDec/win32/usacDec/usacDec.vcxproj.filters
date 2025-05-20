@@ -15,9 +15,15 @@
     <ClCompile Include="..\..\src_frame\usacDec.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src_frame\usacDecApi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src_frame\decifc.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_frame\libxaacd_export.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

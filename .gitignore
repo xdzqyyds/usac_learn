@@ -10,4 +10,14 @@ Test/Test/x64
 Test/x64/Debug/*
 !Test/x64/Debug/input.wav
 
+MPEG-D_USAC/tools
 
+MPEG-D_USAC/mpegD_usac
+
+!MPEG-D_USAC/mpegD_usac/usacEncDec/src_frame/usacDec.c
+!MPEG-D_USAC/mpegD_usac/usacEncDec/src_frame/usacDecApi.c
+!MPEG-D_USAC/mpegD_usac/usacEncDec/src_frame/libxaacd_export.h
+!MPEG-D_USAC/mpegD_usac/usacEncDec/win32/usacDec/usacDec.vcproj
+!MPEG-D_USAC/mpegD_usac/usacEncDec/win32/usacDec/usacDec.vcxproj
+!MPEG-D_USAC/mpegD_usac/usacEncDec/win32/usacDec/usacDec.vcxproj.filters
+!MPEG-D_USAC/mpegD_usac/usacEncDec/win32/usacDec/usacDec.vcxproj.user
