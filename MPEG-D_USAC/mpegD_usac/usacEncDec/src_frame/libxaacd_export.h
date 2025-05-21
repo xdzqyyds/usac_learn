@@ -24,13 +24,16 @@ extern "C" {
 
     LIBXAACDEC_API typedef struct {
         int i;
+
     } decode_obj;
 
 
 
     //LIBXAACDEC_API decode_obj* xheaacd_create(decode_para* decode_para);
-    //
-    //LIBXAACDEC_API int xheaacd_decode_frame(decode_obj* pv_decode_obj, void* audioframe, int ixheaacd_i_bytes_to_read);
+    
+    //LIBXAACDEC_API int xheaacd_decode_frame(decode_obj* pv_decode_obj, void* audioframe, int i_bytes_to_read);
+
+    //LIBXAACDEC_API int xheaacd_delete(decode_obj* pv_decode_obj);
 
 
 #ifdef __cplusplus

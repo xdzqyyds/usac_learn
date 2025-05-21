@@ -144,6 +144,7 @@ Changes:
 #include <libxaacd_export.h>
 #include <streamfile.h>
 #include <decifc.h>
+#include <streamfile_helper.h>
 
 
 
@@ -1422,7 +1423,7 @@ decode_obj* xheaacd_create(decode_para* decode_para) {
     int argc = 11;
     char* argv[] = {
         "usacDec",
-        "-if", "encoded.mp4",
+        "-if", "encode.mp4",
         "-of", "output.wav",
         "-bitdepth", "16",
         "-nodrc",
@@ -1470,7 +1471,7 @@ decode_obj* xheaacd_create(decode_para* decode_para) {
 
 
     /* ###################################################################### */
-    /* ##                      MP4Audio_DecodeFile                         ## */
+    /* ##               MP4Audio_DecodeFile    parameter                   ## */
     /* ###################################################################### */
 #define MAX_TRACKS_PER_LAYER 50
 
@@ -1507,6 +1508,28 @@ decode_obj* xheaacd_create(decode_para* decode_para) {
     /* ###################################################################### */
     /* ##                          main function                           ## */
     /* ###################################################################### */
+    /* select correct mp4_header */
+    if (decode_para->num_chan == 1 ) {
+        switch (decode_para->samp_freq)
+        {
+        case 48000: argv[2] = "sequence/48000_1.mp4"; break;
+        case 44100: argv[2] = "sequence/44100_1.mp4"; break;
+        case 32000: argv[2] = "sequence/32000_1.mp4"; break;
+        default:
+            break;
+        }
+    }
+    else {
+        switch (decode_para->samp_freq)
+        {
+        case 48000: argv[2] = "sequence/48000_2.mp4"; break;
+        case 44100: argv[2] = "sequence/44100_2.mp4"; break;
+        case 32000: argv[2] = "sequence/32000_2.mp4"; break;
+        default:
+            break;
+        }
+    }
+
 
     /* get version number */
     error = getVersion(MPEGD_USAC_VERSION_NUMBER,
@@ -1550,6 +1573,16 @@ decode_obj* xheaacd_create(decode_para* decode_para) {
         &debugLevel);
     if (error) {
         //return PrintErrorCode(USAC_ERROR_FRAMEWORK_INVALIDCMD, &error_depth, "Error initializing MPEG USAC Audio decoder.", "Invalid command line parameters.", verboseLevel, USAC_ERROR_POSITION_INFO);
+    }
+
+    if (decode_para->pcm_wd_sz == 16) {
+        outputBitDepth = BIT_DEPTH_16_BIT;
+    }
+    else if (decode_para->pcm_wd_sz == 24) {
+        outputBitDepth = BIT_DEPTH_24_BIT;
+    }
+    else if (decode_para->pcm_wd_sz == 32) {
+        outputBitDepth = BIT_DEPTH_32_BIT;
     }
 
     if (VERBOSE_LVL1 <= verboseLevel) {
@@ -1609,6 +1642,9 @@ decode_obj* xheaacd_create(decode_para* decode_para) {
 
 
 
+    /* ###################################################################### */
+    /* ##                   MP4Audio_DecodeFile function                   ## */
+    /* ###################################################################### */
 
     /* reduce internal processing chain to 24 bit resolution if requested*/
     if (((mpegUsacBitDepth == BIT_DEPTH_24_BIT) ? 1 : 0 == 1)) {
@@ -1633,6 +1669,9 @@ decode_obj* xheaacd_create(decode_para* decode_para) {
     BsInit(0, bitDebugLevel, 0);
 
     stream = StreamFileOpenRead(mp4_InputFile, FILETYPE_AUTO); if (stream == NULL) goto bail;
+
+    stream->prog[0].decoderConfig->avgBitrate.value = decode_para->bitrate;
+
 
     if (programNr != -1) {      /* specific program selected */
         progStart = programNr;
@@ -1750,7 +1789,7 @@ bail:
 /* ##                  MPEG USAC decoder main function                 ## */
 /* ###################################################################### */
 
-#define USE_SIMPLE_MAIN 0
+#define USE_SIMPLE_MAIN 1
 
 #define AUDIO_BITRATE        64000
 #define AUDIO_SAMPLE_RATE    44100

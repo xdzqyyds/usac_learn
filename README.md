@@ -256,86 +256,42 @@ if (StreamFileClose(outfile))
   ```
   - 可作为参考
 
-- 是想办法获得通过自主设置参数配置出`stream`的值
-- 还是想办法绕过这个值，因为注意到`stream`在前面值出现了三次，但重点是它又配置了`prog`
-- 注意`stream->spec->`内部的值
-- 注意到`prog->programData->spec`中包含总采样点数`sampleCount`和`playTime`，音频时长和采样点索引
-- 注意到`prog->decoderConfig->avgBitrate`表示码率，可能需要手动设置
-
 
 2025.5.21
-- `MP4CreateWin32FileMappingObject`内部含有
-- `err = doOpen((FileMappingObject)self, filename);`对文件进行读取处理
-- 之后返回给`moov->fileMappingObject`
-- 有读取文件，获得其数据指针以及其大小的作用，这里是否可以考虑跳过呢
 
-- 在跳过后`moov->fileMappingObject->data`指向为空，`moov->fileMappingObject->size`为0
-  `moov->inputStream->available`为0
+#### 通过自主设置mp4头信息完成赋值  已完成
+- 是想办法获得通过自主设置参数配置出`stream`的值
+- 注意`stream->spec->`内部的值
+- 注意到`prog->programData->spec`中包含总采样点数`sampleCount`和`playTime`，音频时长和采样点索引
 
-- `AUDIO_SPECIFIC_CONFIG`的定义可以利用
 
+#### 码率指定修改  已完成
+- 注意到`stream->prog->[0]->decoderConfig->avgBitrate`指向码率，考虑在这里设置
 ```
-typedef struct {
-  DESCR_ELE  audioDecoderType        ;
-  DESCR_ELE  samplingFreqencyIndex; /* HP20001010: "u" missing ;-) */
-  DESCR_ELE  samplingFrequency; /* HP20001010 */
-  DESCR_ELE  channelConfiguration;
-  DESCR_ELE  extensionChannelConfiguration;
-
-#ifdef CT_SBR
-  DESCR_ELE  extensionAudioDecoderType;
-  DESCR_ELE  extensionSamplingFrequencyIndex;
-  DESCR_ELE  extensionSamplingFrequency;
-  DESCR_ELE  sbrPresentFlag;
-  DESCR_ELE  syncExtensionType;
-#ifdef PARAMETRICSTEREO
-  DESCR_ELE  psPresentFlag;
-#endif
-#endif
-
-#ifndef CORRIGENDUM1
-  int        BWS_on; /* CelpBandWidthScalablity on ? */
-#endif
-
-  union {
-    TF_SPECIFIC_CONFIG TFSpecificConfig;
-    USAC_CONFIG usacConfig;
-    CELP_SPECIFIC_CONFIG celpSpecificConfig;
-#ifndef CORRIGENDUM1
-    CELP_ENH_SPECIFIC_CONFIG celpEnhSpecificConfig;
-#endif
-#ifdef AAC_ELD
-    ELD_SPECIFIC_CONFIG eldSpecificConfig;
-#endif
-    PARA_SPECIFIC_CONFIG paraSpecificConfig;
-    HVXC_SPECIFIC_CONFIG hvxcSpecificConfig;	/* AI 990616 */
-#ifdef EXT2PAR
-    SSC_SPECIFIC_CONFIG  sscSpecificConfig;
-#endif
-#ifdef MPEG12
-    MPEG_1_2_SPECIFIC_CONFIG  MPEG_1_2_SpecificConfig;
-#endif
-  } specConf;
-
-#ifdef I2R_LOSSLESS
-  SLS_SPECIFIC_CONFIG  slsSpecificConfig;   /* make it outside of union: used together with TF */
-#endif
-
-  DESCR_ELE epConfig;
-  EP_SPECIFIC_CONFIG epSpecificConfig;
-  DESCR_ELE directMapping;
-}  AUDIO_SPECIFIC_CONFIG;
+    stream->prog[0].decoderConfig->avgBitrate.value = decode_para->bitrate;
+    使用上述方法解决
 ```
 
-- 统计`prog` 和 `asc`在解码每一帧模块的位置以及是否为关键参数
+#### 通道数修改  已完成
+- 注意到`stream->prog->[0]->decoderConfig->bufferSizeDB`会随着头文件的设置发生变化
 ```
-asc = &(prog->decoderConfig[0].audioSpecificConfig);
-switch (asc->audioDecoderType.value)  
-channelNum = get_channel_number_USAC(&asc->specConf.usacConfig,&numFC, &fCenter, &numSC, &numBC, &bCenter, &numLFE,NULL);
-这里的channelNum可以自己来进行配置，但是numFC指的是什么，在通过该函数时只有它的值发生了改变
+    发现其会随着通道数的改变而改变，根据上方头信息选择会自行更改
+```
 
 
+
+#### 对持续时间进行赋值
 ```
+if (0 == StreamFileGetEditlist(prog, trackIdx, &tmpStart, &tmpDuration)) {
+    startOffset[trackIdx] = tmpStart;
+    durationTotal[trackIdx] = tmpDuration;
+    if (tmpDuration > -1) {
+        useEditlist[trackIdx] = 1;
+    }
+}
+```
+注意到这里将`tmpDuration`赋值给`durationTotal[trackIdx]`,在后续对照考虑
+
 
 
  

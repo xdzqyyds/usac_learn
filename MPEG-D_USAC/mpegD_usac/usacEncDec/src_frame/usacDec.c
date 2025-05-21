@@ -1358,7 +1358,7 @@ static USAC_RETURN_CODE execFullDecode(
 /* ##                  MPEG USAC decoder main function                 ## */
 /* ###################################################################### */
 
-#define USE_SIMPLE_MAIN 1
+#define USE_SIMPLE_MAIN 0
 
 #if USE_SIMPLE_MAIN
 
