@@ -46,6 +46,9 @@ long find_data_chunk(FILE* wav_file) {
 
 
 
+#define Super_frame_enabled 0
+
+
 int main() {
     const char* input_wav_path = "input.wav";
     const char* encoded_wav_path = "encoded.mp4";
@@ -104,10 +107,8 @@ int main() {
     while (i < 400) {
         fread(buffer, 1, Handle_frame_length, input_wav_file);
         if (xheaace_encode_frame(ctx, buffer, &encoded_data, &encoded_size) == 1) {
-            //if (encoded_size > 0) {
-            //    xheaacd_decode_frame(decoder, encoded_data, encoded_size);
-            //}
 
+#if Super_frame_enabled
             if (encode_superframe(super_ctx, encoded_data, encoded_size, superframe_output) == 1) {
                 fprintf(stdout, "superframe successful\n");
                 fflush(stdout);
@@ -118,7 +119,7 @@ int main() {
                 /*decode one superframe into multiple audio frames*/
                 uint8_t* audio_frame = (uint8_t*)decode_superframe(superframe_output, super_decoder, &total_size, frame_sizes);
                 int fff = 0;
-                
+
                 //uint8_t* pcm_buffer = (uint8_t*)malloc(Handle_frame_length * 50);
                 //uint32_t pcm_offset = 0;
                 while (offset < total_size && i < 17) {
@@ -131,6 +132,11 @@ int main() {
                     i++;
                 }
             }
+#else
+            if (encoded_size > 0) {
+                xheaacd_decode_frame(decoder, encoded_data, encoded_size);
+            }
+#endif 
         }
         fprintf(stdout, "\rEncoding frame%4d\n", xheaace_get_frame_count(ctx));
         fflush(stdout);
