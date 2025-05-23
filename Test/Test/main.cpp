@@ -90,8 +90,6 @@ int main() {
     dec_para.sbr_flag = AUDIO_SBR_FLAG;
     dec_para.mps_flag = AUDIO_MPS_FLAG;
     dec_para.Super_frame_mode = AUDIO_SUPERFRAME;
-    strcpy(dec_para.output_path, "audio_frame_decoded_output.wav");
-    dec_para.pf_out = fopen(dec_para.output_path, "wb");
     superframe_decoder_t* super_decoder = create_superframe_decoder(Super_frame_length);
     decode_obj* decoder = (decode_obj*)xheaacd_create(&dec_para);
     if (!decoder) {
@@ -103,38 +101,38 @@ int main() {
 
     fseek(input_wav_file, data_offset, SEEK_SET);
 
-    while (i < 600) {
+    while (i < 400) {
         fread(buffer, 1, Handle_frame_length, input_wav_file);
         if (xheaace_encode_frame(ctx, buffer, &encoded_data, &encoded_size) == 1) {
-            if (encoded_size > 0) {
-                xheaacd_decode_frame(decoder, encoded_data, encoded_size);
-            }
-
-            //if (encode_superframe(super_ctx, encoded_data, encoded_size, superframe_output) == 1) {
-            //    fprintf(stdout, "superframe successful\n");
-            //    fflush(stdout);
-            //    uint32_t total_size = 0;
-            //    uint32_t frame_sizes[17] = { 0 };
-            //    uint32_t offset = 0;
-            //    uint32_t i = 0;
-            //    /*decode one superframe into multiple audio frames*/
-            //    uint8_t* audio_frame = (uint8_t*)decode_superframe(superframe_output, super_decoder, &total_size, frame_sizes);
-            //    int fff = 0;
-            //    
-            //    //uint8_t* pcm_buffer = (uint8_t*)malloc(Handle_frame_length * 50);
-            //    //uint32_t pcm_offset = 0;
-            //    while (offset < total_size && i < 17) {
-            //        if (frame_sizes[i] > 0) {
-            //            /*decoded audio frame*/
-            //            xheaacd_decode_frame(decoder, audio_frame + offset, frame_sizes[i]);
-            //            /*audio player, The input data is "decoder->pb_out_buf" ,the size is "Handle_frame_length"*/
-            //        }
-            //        offset += frame_sizes[i];
-            //        i++;
-            //    }
+            //if (encoded_size > 0) {
+            //    xheaacd_decode_frame(decoder, encoded_data, encoded_size);
             //}
+
+            if (encode_superframe(super_ctx, encoded_data, encoded_size, superframe_output) == 1) {
+                fprintf(stdout, "superframe successful\n");
+                fflush(stdout);
+                uint32_t total_size = 0;
+                uint32_t frame_sizes[17] = { 0 };
+                uint32_t offset = 0;
+                uint32_t i = 0;
+                /*decode one superframe into multiple audio frames*/
+                uint8_t* audio_frame = (uint8_t*)decode_superframe(superframe_output, super_decoder, &total_size, frame_sizes);
+                int fff = 0;
+                
+                //uint8_t* pcm_buffer = (uint8_t*)malloc(Handle_frame_length * 50);
+                //uint32_t pcm_offset = 0;
+                while (offset < total_size && i < 17) {
+                    if (frame_sizes[i] > 0) {
+                        /*decoded audio frame*/
+                        xheaacd_decode_frame(decoder, audio_frame + offset, frame_sizes[i]);
+                        /*audio player, The input data is "decoder->pb_out_buf" ,the size is "Handle_frame_length"*/
+                    }
+                    offset += frame_sizes[i];
+                    i++;
+                }
+            }
         }
-        fprintf(stdout, "\rframe %4d\n", xheaace_get_frame_count(ctx));
+        fprintf(stdout, "\rEncoding frame%4d\n", xheaace_get_frame_count(ctx));
         fflush(stdout);
         i++;
     }
@@ -142,6 +140,7 @@ int main() {
     free(encoded_data);
     free(superframe_output);
     xheaace_delete(ctx, encoded_wav_path);
+    xheaacd_delete(decoder);
     destroy_superframe_encoder(super_ctx);
     fclose(input_wav_file);
     if (enc_para.output_file_flag) {

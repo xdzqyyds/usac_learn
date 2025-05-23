@@ -141,10 +141,10 @@ Changes:
 #endif
 #endif
 
-#include <libxaacd_export.h>
 #include <streamfile.h>
 #include <decifc.h>
 #include <streamfile_helper.h>
+#include <libxaacd_export.h>
 
 
 
@@ -252,6 +252,40 @@ static const char usac_binaries[][3][FILENAME_MAX] =
 };
 
 static int gUseFractionalDelayDecor = 0;           /* used as extern int in decoder_usac.c */
+
+
+struct decode_obj_ {
+    DEC_DATA* decData;
+    HANDLE_STREAMPROG prog;
+    unsigned long framesDone;
+    DEC_DEBUG_DATA* decDebugData;
+    char* decPara;
+    DRC_APPLY_INFO    drcInfo;
+
+    int* streamID;
+    HANDLE_DECODER_GENERAL hFault;
+    int mainDebugLevel;
+    int audioDebugLevel;
+    int epDebugLevel;
+    char* aacDebugString;
+    int HEaacProfileLevel;
+    int bUseHQtransposer;
+
+    int numChannelOut;
+    float fSampleOut;
+
+    AUDIOPREROLL_INFO* aprInfo;
+    int AudioPreRollExisting;
+
+    int verboseLevel;
+    char* audioFileName;
+    int   int24flag;
+
+    AudioFile* audioFile;
+    HANDLE_STREAMFILE stream;
+
+};
+
 
 /* ###################################################################### */
 /* ##                 MPEG USAC decoder static functions               ## */
@@ -777,16 +811,16 @@ static int setupUsacDecoder(
 #endif
 
     #ifdef _WIN32
-    basename = strstr(globalPath, "usacDec.exe");
+  //  basename = strstr(globalPath, "usacDec.exe");
 #else
     basename = strstr(globalPath, "usacDec");
 #endif
 
-    if (basename == 0) {
-      CommonExit(1, "Error initializing USAC Decoder.");
-    } else {
-      strcpy(basename, "\0");
-   }
+  //  if (basename == 0) {
+  //    CommonExit(1, "Error initializing USAC Decoder.");
+  //  } else {
+  //    strcpy(basename, "\0");
+  // }
 
     /* set the binary names */
     fprintf(stdout, "Collecting executables...\n");
@@ -1417,7 +1451,201 @@ static int setElstInfo(ELST_INFO* elstInfo,
     return retVal;
 }
 
+static int frameDataAddAccessUnit(DEC_DATA* decData,
+    HANDLE_STREAM_AU au,
+    int track)
+{
+    unsigned long unitSize, unitPad;
+    HANDLE_BSBITBUFFER bb;
+    HANDLE_BSBITSTREAM bs;
+    HANDLE_BSBITBUFFER AUBuffer = NULL;
+    int idx = track;
 
+    unitSize = (au->numBits + 7) / 8;
+    unitPad = (unitSize * 8) - au->numBits;
+
+    bb = BsAllocPlainDirtyBuffer(au->data, /*au->numBits*/ unitSize << 3);
+    bs = BsOpenBufferRead(bb);
+
+    AUBuffer = decData->frameData->layer[idx].bitBuf;
+    if (AUBuffer != 0) {
+        if ((BsBufferFreeBits(AUBuffer)) > (long)unitSize * 8) {
+            int auNumber = decData->frameData->layer[idx].NoAUInBuffer;
+            BsGetBufferAppend(bs, AUBuffer, 1, unitSize * 8);
+            decData->frameData->layer[idx].AULength[auNumber] = unitSize * 8;
+            decData->frameData->layer[idx].AUPaddingBits[auNumber] = unitPad;
+            decData->frameData->layer[idx].NoAUInBuffer++;/* each decoder must decrease this by the number of decoded AU */
+            /* each decoder must remove the first element in the list  by shifting the elements down */
+            DebugPrintf(6, "AUbuffer %2i: %i AUs, last size %i, lastPad %i\n", idx, decData->frameData->layer[idx].NoAUInBuffer, decData->frameData->layer[idx].AULength[auNumber], decData->frameData->layer[idx].AUPaddingBits[auNumber]);
+        }
+        else {
+            BsGetSkip(bs, unitSize * 8);
+            CommonWarning(" input buffer overflow for layer %d ; skipping next AU", idx);
+        }
+    }
+    else {
+        BsGetSkip(bs, unitSize * 8);
+    }
+    BsCloseRemove(bs, 0);
+    free(bb);
+    return 0;
+}
+
+static int MP4Audio_SetupDecoders(DEC_DATA* decData,
+    DEC_DEBUG_DATA* decDebugData,
+    int                     streamCount,     /* in: number of streams decoded */
+    char* decPara,         /* in: decoder parameter string */
+    char* drc_payload_fileName,
+    char* drc_config_fileName,
+    char* loudness_config_fileName,
+    int* streamID,
+    HANDLE_DECODER_GENERAL  hFault,
+    int                     mainDebugLevel,
+    int                     audioDebugLevel,
+    int                     epDebugLevel,
+    char* aacDebugString
+#ifdef CT_SBR
+    , int                    HEaacProfileLevel
+    , int                    bUseHQtransposer
+#endif
+#ifdef HUAWEI_TFPP_DEC
+    , int                    actATFPP
+#endif
+) {
+    int delayNumSample = 0;
+
+    AudioInit(NULL, audioDebugLevel);
+
+    /*
+      init decoders
+    */
+
+    decDebugData->aacDebugString = aacDebugString;
+    decDebugData->decPara = decPara;
+    decDebugData->infoFileName = NULL;
+    decDebugData->mainDebugLevel = mainDebugLevel;
+    decDebugData->epDebugLevel = epDebugLevel;
+
+    delayNumSample = audioDecInit(hFault,
+        decData,
+        decDebugData,
+        drc_payload_fileName,
+        drc_config_fileName,
+        loudness_config_fileName,
+        streamID,
+#ifdef CT_SBR
+        HEaacProfileLevel,
+        bUseHQtransposer,
+#endif
+        streamCount
+#ifdef HUAWEI_TFPP_DEC
+        , actATFPP
+#endif
+    );
+
+    return delayNumSample;
+}
+
+static int usac_core_parsePrerollData(HANDLE_STREAM_AU        au,
+    HANDLE_STREAM_AU* prerollAU,
+    unsigned int* numPrerollAU,
+    AUDIO_SPECIFIC_CONFIG* prerollASC,
+    unsigned int* prerollASCLength,
+    unsigned int* applyCrossFade
+) {
+    HANDLE_BSBITBUFFER bb = NULL;
+    HANDLE_BSBITSTREAM bs;
+
+    int retVal = 1;
+    int nLFE = 0;
+    int ascBitCounter = 0;
+    unsigned int i = 0;
+    unsigned int j = 0;
+    unsigned long indepFlag = 0;
+    unsigned long extPayloadPresentFlag = 0;
+    unsigned long useDefaultLengthFlag = 0;
+    unsigned long dummy = 0;
+    unsigned long auByte = 0;
+    unsigned int ascSize = 0;
+    unsigned int auLength = 0;
+    unsigned int totalPayloadLength = 0;
+    unsigned int nBitsToSkip = 0;
+
+    bb = BsAllocPlainDirtyBuffer(au->data, au->numBits);
+    bs = BsOpenBufferRead(bb);
+
+    *applyCrossFade = 0;
+
+    /* Indep flag must be one */
+    BsGetBit(bs, &indepFlag, 1);
+    if (!indepFlag) {
+        goto freeMem;
+    }
+
+    /* Payload present flag must be one */
+    BsGetBit(bs, &extPayloadPresentFlag, 1);
+    if (!extPayloadPresentFlag) {
+        goto freeMem;
+    }
+
+    /* Default length flag must be zero */
+    BsGetBit(bs, &useDefaultLengthFlag, 1);
+    if (useDefaultLengthFlag) {
+        goto freeMem;
+    }
+
+    /* Seems to be a valid preroll extension */
+    retVal = 0;
+
+    /* read overall ext payload length */
+    UsacConfig_ReadEscapedValue(bs, &totalPayloadLength, 8, 16, 0);
+
+    /* read ASC size */
+    UsacConfig_ReadEscapedValue(bs, &ascSize, 4, 4, 8);
+    *prerollASCLength = ascSize;
+
+    /* read ASC */
+    if (ascSize) {
+        ascBitCounter = UsacConfig_Advance(bs, &(prerollASC->specConf.usacConfig), 0);
+        prerollASC->channelConfiguration.value = usac_get_channel_number(&prerollASC->specConf.usacConfig, &nLFE);
+
+        /* Skip remaining bits from ASC that were not parsed */
+        nBitsToSkip = ascSize * 8 - ascBitCounter;
+
+        while (nBitsToSkip) {
+            int nMaxBitsToRead = min(nBitsToSkip, LONG_NUMBIT);
+            BsGetBit(bs, &dummy, nMaxBitsToRead);
+            nBitsToSkip -= nMaxBitsToRead;
+        }
+    }
+
+    BsGetBit(bs, (unsigned long*)applyCrossFade, 1);
+    BsGetBit(bs, &dummy, 1);
+
+    /* read num preroll AU's */
+    UsacConfig_ReadEscapedValue(bs, numPrerollAU, 2, 4, 0);
+    assert(*numPrerollAU <= MPEG_USAC_CORE_MAX_AU);
+
+    for (i = 0; i < *numPrerollAU; ++i) {
+        /* For every AU get length and allocate memory  to hold the data */
+        UsacConfig_ReadEscapedValue(bs, &auLength, 16, 16, 0);
+        prerollAU[i] = StreamFileAllocateAU(auLength * 8);
+
+        for (j = 0; j < auLength; ++j) {
+            /* Read AU bytewise and copy into AU data buffer */
+            BsGetBit(bs, &auByte, 8);
+            memcpy(&(prerollAU[i]->data[j]), &auByte, 1);
+        }
+    }
+
+freeMem:
+    BsCloseRemove(bs, 0);
+    if (bb) {
+        free(bb);
+    }
+
+    return retVal;
+}
 
 decode_obj* xheaacd_create(decode_para* decode_para) {
     int argc = 11;
@@ -1430,6 +1658,15 @@ decode_obj* xheaacd_create(decode_para* decode_para) {
         "-cpo", "0",
         "-v"
     };
+    decode_obj* ctx = (decode_obj*)malloc(sizeof(struct decode_obj_));
+    unsigned long framesDone = 0;
+    char* decPara = "";
+    static int streamID = -1;
+    int audioDebugLevel = 0;
+    int epDebugLevel = 0;
+    int HEaacProfileLevel = 5;
+    int bUseHQtransposer = 0;
+    int AudioPreRollExisting = 0;
 
     /* ###################################################################### */
     /* ##                          main parameter                          ## */
@@ -1504,31 +1741,67 @@ decode_obj* xheaacd_create(decode_para* decode_para) {
     double startOffset[MAX_TRACKS_PER_LAYER] = { 0.0 };
     double durationTotal[MAX_TRACKS_PER_LAYER] = { 0.0 };
 
+    int numChannelOut = 0;
+    float fSampleOut = 0.0f;
+
+    DRC_APPLY_INFO    drcInfo;
+
+    drcInfo.uniDrc_config_file = tmpFile_Drc_config;
+    drcInfo.uniDrc_payload_file = tmpFile_Drc_payload;
+    drcInfo.loudnessInfo_config_file = tmpFile_Loudness_config;
+
 
     /* ###################################################################### */
     /* ##                          main function                           ## */
     /* ###################################################################### */
     /* select correct mp4_header */
-    if (decode_para->num_chan == 1 ) {
-        switch (decode_para->samp_freq)
-        {
-        case 48000: argv[2] = "sequence/48000_1.mp4"; break;
-        case 44100: argv[2] = "sequence/44100_1.mp4"; break;
-        case 32000: argv[2] = "sequence/32000_1.mp4"; break;
-        default:
-            break;
+    if (decode_para->bitrate >= 64000) {
+        if (decode_para->num_chan == 1) {
+            switch (decode_para->samp_freq)
+            {
+            case 48000: argv[2] = "sequence/64/48000_1.mp4"; break;
+            case 44100: argv[2] = "sequence/64/44100_1.mp4"; break;
+            case 32000: argv[2] = "sequence/64/32000_1.mp4"; break;
+            default:
+                break;
+            }
         }
+        else {
+            switch (decode_para->samp_freq)
+            {
+            case 48000: argv[2] = "sequence/64/48000_2.mp4"; break;
+            case 44100: argv[2] = "sequence/64/44100_2.mp4"; break;
+            case 32000: argv[2] = "sequence/64/32000_2.mp4"; break;
+            default:
+                break;
+            }
+        }
+   
     }
     else {
-        switch (decode_para->samp_freq)
-        {
-        case 48000: argv[2] = "sequence/48000_2.mp4"; break;
-        case 44100: argv[2] = "sequence/44100_2.mp4"; break;
-        case 32000: argv[2] = "sequence/32000_2.mp4"; break;
-        default:
-            break;
+        if (decode_para->num_chan == 1) {
+            switch (decode_para->samp_freq)
+            {
+            case 48000: argv[2] = "sequence/20/48000_1.mp4"; break;
+            case 44100: argv[2] = "sequence/20/44100_1.mp4"; break;
+            case 32000: argv[2] = "sequence/20/32000_1.mp4"; break;
+            default:
+                break;
+            }
         }
+        else {
+            switch (decode_para->samp_freq)
+            {
+            case 48000: argv[2] = "sequence/20/48000_2.mp4"; break;
+            case 44100: argv[2] = "sequence/20/44100_2.mp4"; break;
+            case 32000: argv[2] = "sequence/20/32000_2.mp4"; break;
+            default:
+                break;
+            }
+        }
+
     }
+
 
 
     /* get version number */
@@ -1778,11 +2051,551 @@ decode_obj* xheaacd_create(decode_para* decode_para) {
 
 
 
+    ctx->decData = decData;
+    ctx->prog = prog;
+    ctx->framesDone = framesDone;
+    ctx->decDebugData = decDebugData;
+    ctx->decPara = decPara;
+    ctx->drcInfo = drcInfo;
+    ctx->streamID = &streamID;
+    ctx->hFault = hFault;
+    ctx->mainDebugLevel = mainDebugLevel;
+    ctx->audioDebugLevel = audioDebugLevel;
+    ctx->epDebugLevel = epDebugLevel;
+    ctx->aacDebugString = aacDebugString;
+    ctx->HEaacProfileLevel = HEaacProfileLevel;
+    ctx->bUseHQtransposer = bUseHQtransposer;
+    ctx->numChannelOut = numChannelOut;
+    ctx->fSampleOut = fSampleOut;
+    ctx->aprInfo = &aprInfo;
+    ctx->AudioPreRollExisting = AudioPreRollExisting;
+    ctx->verboseLevel = verboseLevel;
+    ctx->audioFile = NULL;
+    ctx->stream = NULL;
+
+    return ctx;
+
+
 bail:
 
     return 0;
 
 }
+
+int xheaacd_decode_frame(decode_obj* ctx, void* audioframe, int i_bytes_to_read) {
+    float** outSamples;
+    long  numOutSamples;
+    int nAudioPreRollSamplesWrittenPerChannel = 0;
+    int frameCntAudioPreRoll = 0;
+    long startOffsetInSamples[MAX_TRACKS_PER_LAYER] = { 0 };
+
+    float* ch0;
+    int streamID = -1;
+
+    char buffer_empty = 0;
+    int tracksForDecoder;
+    AUDIO_SPECIFIC_CONFIG prerollASC;
+    HANDLE_STREAM_AU inputAUs[MAX_TRACKS_PER_LAYER];
+    HANDLE_STREAM_AU decoderAUs[MAX_TRACKS_PER_LAYER];
+    HANDLE_STREAM_AU prerollAU[MPEG_USAC_CORE_MAX_AU];
+    unsigned int prerollASCLength = 0;
+    unsigned int applyCrossFade = 0;
+#ifdef DEBUGPLOT
+    plotInit(framePlot, audioFileName, 0);
+#endif
+
+    {
+        int layer, track;
+        int firstTrackInLayer, resultTracksInLayer;
+        int err = 0;
+
+        ctx->streamID = &streamID;
+
+        for (track = 0; track < MAX_TRACKS_PER_LAYER; track++) {
+            inputAUs[track] = StreamFileAllocateAU(0);
+            decoderAUs[track] = StreamFileAllocateAU(0);
+        }
+        firstTrackInLayer = tracksForDecoder = 0;
+        /* go through each decoded layer */
+        for (layer = 0; layer < (signed)ctx->decData->frameData->scalOutSelect + 1; layer++) {
+            /* go through all frames in the superframe */
+            resultTracksInLayer = EPconvert_expectedOutputClasses(ctx->decData->frameData->ep_converter[layer]);
+            while ((signed)ctx->decData->frameData->layer[tracksForDecoder].NoAUInBuffer < StreamAUsPerFrame(ctx->prog, firstTrackInLayer)) {
+                int epconv_input_tracks;
+                if (EPconvert_numFramesBuffered(ctx->decData->frameData->ep_converter[layer])) {
+                    epconv_input_tracks = 0;
+                }
+                else {
+                    epconv_input_tracks = ctx->decData->frameData->tracksInLayer[layer];
+                }
+
+                /* go through all tracks in this layer */
+                //for (track = 0; track < epconv_input_tracks; track++) {
+                //    err = StreamGetAccessUnit(ctx->prog, firstTrackInLayer + track, inputAUs[track]);
+                //    if (err) break;
+                //}
+                inputAUs[0]->numBits = i_bytes_to_read * 8;
+                inputAUs[0]->data = audioframe;
+                ctx->prog->programData->status = STATUS_READING;
+                ctx->prog->programData->timeThisFrame[0] = ctx->prog->programData->timePerAU[0];
+
+                if (err) break;
+
+                /* decode with epTool if necessary */
+                err = EPconvert_processAUs(ctx->decData->frameData->ep_converter[layer],
+                    inputAUs, epconv_input_tracks,
+                    decoderAUs, MAX_TRACKS_PER_LAYER);
+
+                if (resultTracksInLayer != err) {
+                    CommonWarning("Expected %i AUs after ep-conversion, but got %i AUs", resultTracksInLayer, err);
+                    /*resultTracksInLayer=err;*/
+                }
+                err = 0;
+
+                /* save the tracks */
+                for (track = 0; track < resultTracksInLayer; track++) {
+                    frameDataAddAccessUnit(ctx->decData, decoderAUs[track], tracksForDecoder + track);
+                }
+            }
+            if (err) break;
+            firstTrackInLayer += ctx->decData->frameData->tracksInLayer[layer];
+            tracksForDecoder += resultTracksInLayer;
+        }
+        buffer_empty = 1;
+        for (track = 0; track < (signed)ctx->decData->frameData->od->streamCount.value; track++) {
+            if (ctx->decData->frameData->layer[track].NoAUInBuffer > 0) buffer_empty = 0;
+        }
+        //if (buffer_empty)
+        //    break;
+    }
+
+    if (ctx->framesDone == 0) {
+        int delay, track;
+        char              tmpFile_Drc_payload[FILENAME_MAX] = "tmpFileUsacDec_drc_payload_output.bit";
+        char              tmpFile_Drc_config[FILENAME_MAX] = "tmpFileUsacDec_drc_config_output.bit";
+        char              tmpFile_Loudness_config[FILENAME_MAX] = "tmpFileUsacDec_drc_loudness_output.bit";
+
+        ctx->drcInfo.uniDrc_payload_file = tmpFile_Drc_payload;
+        ctx->drcInfo.uniDrc_config_file = tmpFile_Drc_config;
+        ctx->drcInfo.loudnessInfo_config_file = tmpFile_Loudness_config;
+
+        //initESDescr(&(ctx->decData->frameData->od->ESDescriptor[0]));
+
+        delay = MP4Audio_SetupDecoders(ctx->decData,
+            ctx->decDebugData,
+            tracksForDecoder,
+            ctx->decPara,
+            ctx->drcInfo.uniDrc_payload_file,
+            ctx->drcInfo.uniDrc_config_file,
+            ctx->drcInfo.loudnessInfo_config_file,
+            ctx->streamID,
+            ctx->hFault,
+            ctx->mainDebugLevel,
+            ctx->audioDebugLevel,
+            ctx->epDebugLevel,
+            ctx->aacDebugString
+#ifdef CT_SBR
+            , ctx->HEaacProfileLevel
+            , ctx->bUseHQtransposer
+#endif
+#ifdef HUAWEI_TFPP_DEC
+            , actATFPP
+#endif
+        );
+
+        /* decoder initialisation will update streamCount in decData and
+           print an error if decoder initialisation does not agree with track count
+           determined earlier by frameDataInit() and stored in suitableTracks */
+
+        ctx->fSampleOut = (float)ctx->decData->frameData->scalOutSamplingFrequency;
+        ctx->numChannelOut = ctx->decData->frameData->scalOutNumChannels;
+
+        ctx->audioFile = AudioOpenWrite("tmpFileUsacDec_core_output.wav",
+                                   "wav",
+                                   ctx->numChannelOut,
+                                   ctx->fSampleOut,
+                                   0);
+
+//        if (ELST_MODE_CORE_LEVEL == elstInfoModeLevel) {
+//            for (track = 0; track < (signed)ctx->decData->frameData->od->streamCount.value; track++) {
+//                if (useEditlist[track]) {
+//#ifndef ALIGN_PRECISION_NOFIX
+//                    double tmpStartOffset = startOffset[track] * fSampleOut + 0.5;
+//                    double tmpPlayTime = durationTotal[track] * fSampleOut + 0.5;
+//
+//                    startOffsetInSamples[track] = (long)(tmpStartOffset);
+//                    playTimeInSamples[track] = (long)(tmpPlayTime);
+//#else
+//                    startOffsetInSamples[track] = (long)(startOffset[track] * fSampleOut + 0.5);
+//                    playTimeInSamples[track] = (long)(durationTotal[track] * fSampleOut + 0.5);
+//#endif
+//                }
+//            }
+//        }
+
+        /* open audio file */
+        /* (sample format: 16 bit twos complement, uniform quantisation) */
+//        if (fileOpened == 0) {
+//
+//            if (monoFilesOut == 0) {
+//                audioFile = AudioOpenWrite(audioFileName,
+//                    audioFileFormat,
+//                    numChannelOut,
+//                    fSampleOut,
+//                    int24flag);
+//            }
+//            else {
+//                audioFile = AudioOpenWriteMC(audioFileName,
+//                    audioFileFormat,
+//                    fSampleOut,
+//                    int24flag,
+//                    numFC,
+//                    fCenter,
+//                    numSC,
+//                    bCenter,
+//                    numBC,
+//                    numLFE);
+//            }
+//
+//            if (audioFile == NULL)
+//                CommonExit(1, "Decode: error opening audio file %s "
+//                    "(maybe unknown format \"%s\")",
+//                    audioFileName, audioFileFormat);
+//
+//            /* seek to beginning of first frame (with delay compensation) */
+//            AudioSeek(audioFile, -delay);
+//
+//            fileOpened = 1;
+//        }
+    }
+
+    if ((ctx->mainDebugLevel == 1) && (ctx->framesDone % 20 == 0)) {
+        fprintf(stderr, "\rFrame [%ld] ", ctx->framesDone);
+        fflush(stderr);
+    }
+    if (ctx->mainDebugLevel >= 2 && ctx->mainDebugLevel <= 3) {
+        printf("\rFrame [%ld] ", ctx->framesDone);
+        fflush(stdout);
+    }
+    if (ctx->mainDebugLevel > 3)
+        printf("Frame [%ld]\n", ctx->framesDone);
+
+    if (ctx->framesDone == 0) {
+        int i = 0;
+        int retVal = 0;
+        int instance = 0;                                               /* AudioPreRoll() shall be the first element in the AU! */
+        int track = ctx->decData->frameData->od->streamCount.value - 1;   /* USAC only supports one track! */
+        AUDIO_SPECIFIC_CONFIG* pUsacASC = &ctx->decData->frameData->od->ESDescriptor[track]->DecConfigDescr.audioSpecificConfig;
+        USAC_DECODER_CONFIG* pUsacConfig = &pUsacASC->specConf.usacConfig.usacDecoderConfig;
+        USAC_EXT_CONFIG* pUsacExtConfig = &pUsacConfig->usacElementConfig[instance].usacExtConfig;
+
+        if (USAC_ID_EXT_ELE_AUDIOPREROLL == pUsacExtConfig->usacExtElementType) {
+            /* Prepare preroll-ASC layout - needed to have the correct number of bits for every entry */
+            memcpy(&prerollASC, pUsacASC, sizeof(AUDIO_SPECIFIC_CONFIG));
+
+            /* Parse preroll data if present */
+            retVal = usac_core_parsePrerollData(decoderAUs[track],
+                prerollAU,
+                &ctx->aprInfo->numPrerollAU,
+                &prerollASC,
+                &prerollASCLength,
+                &applyCrossFade);
+
+            if (0 != retVal) {
+                ctx->AudioPreRollExisting = 0;
+            }
+            else {
+                ctx->AudioPreRollExisting = 1;
+
+                /* decoder Pre Roll AU's  */
+                for (i = 0; i < ctx->aprInfo->numPrerollAU; i++) {
+                    BsBufferSetData(&ctx->decData->frameData->layer[0],
+                        prerollAU[i]->data,
+                        prerollAU[i]->numBits);
+
+                    audioDecFrame(ctx->decData,
+                        ctx->hFault,
+                        &outSamples,
+                        &numOutSamples,
+                        &ctx->numChannelOut);
+
+                    //AudioWriteDataTruncat(audioFile, outSamples, numOutSamples, 0);
+
+                    nAudioPreRollSamplesWrittenPerChannel += numOutSamples;
+                    frameCntAudioPreRoll++;
+                }
+
+                /* Put the IPF AU back into our decData instance and continue decoding as normal. */
+                BsBufferSetData(&ctx->decData->frameData->layer[0],
+                    decoderAUs[track]->data,
+                    decoderAUs[track]->numBits);
+
+                ctx->aprInfo->nSamplesCoreCoderPreRoll = nAudioPreRollSamplesWrittenPerChannel;
+            }
+        }
+
+        startOffsetInSamples[0] += ctx->aprInfo->nSamplesCoreCoderPreRoll;
+    }
+
+    audioDecFrame(ctx->decData,
+        ctx->hFault,
+        &outSamples,
+        &numOutSamples,
+        &ctx->numChannelOut);
+    
+    ch0 = outSamples[0];
+
+//   if (numChannelOut != decData->frameData->scalOutNumChannels && firstDecdoeFrame)
+//   {
+//       AudioClose(audioFile);
+//       /*  fixing 7.1 channel error */
+//       if (decData->frameData->scalOutObjectType == ER_BSAC)
+//       {
+//           channelNum = get_channel_number_BSAC(numChannelOut, /* SAMSUNG_2005-09-30 : Warnning ! it may not be same with asc->channelConfiguration.value. */
+//               asc->specConf.TFSpecificConfig.progConfig,
+//               &numFC, &fCenter, &numSC, &numBC, &bCenter, &numLFE, NULL);
+//
+//       }
+//       else
+//       {
+//           switch (asc->audioDecoderType.value) {
+//ifdef AAC_ELD
+//           case ER_AAC_ELD:
+//               channelNum = asc->channelConfiguration.value;
+//               break;
+//endif
+//           default:
+//               channelNum = get_channel_number(numChannelOut, /* SAMSUNG_2005-09-30 : Warnning ! it may not be same with asc->channelConfiguration.value. */
+//                   asc->specConf.TFSpecificConfig.progConfig,
+//                   &numFC, &fCenter, &numSC, &numBC, &bCenter, &numLFE, NULL);
+//               break;
+//           }
+//       }
+//
+//       if (channelNum > 2) {
+//           CommonWarning("No standards for putting %ld Channels into 1 File -> Using multiple files\n", channelNum);
+//           monoFilesOut = 1;
+//       }
+//
+//       if (monoFilesOut == 0) {
+//           audioFile = AudioOpenWrite(audioFileName,
+//               audioFileFormat,
+//               numChannelOut,
+//               fSampleOut,
+//               int24flag);
+//       }
+//       else {
+//           /* SAMSUNG 2005-10-18 */
+//           if (decData->frameData->scalOutObjectType == ER_BSAC)
+//               audioFile = AudioOpenWriteMC_BSAC(audioFileName,
+//                   audioFileFormat,
+//                   fSampleOut,
+//                   int24flag,
+//                   numFC,
+//                   fCenter,
+//                   numSC,
+//                   bCenter,
+//                   numBC,
+//                   numLFE);
+//           else
+//               audioFile = AudioOpenWriteMC(audioFileName,
+//                   audioFileFormat,
+//                   fSampleOut,
+//                   int24flag,
+//                   numFC,
+//                   fCenter,
+//                   numSC,
+//                   bCenter,
+//                   numBC,
+//                   numLFE);
+//       }
+//       firstDecdoeFrame = 0;
+//   }
+
+
+#ifdef CT_SBR
+      /* The implicit signalling....*/
+
+ //   if (decData->tfData != NULL) {
+ //       static int reInitAudioOutput = 1;
+ //
+ //       if (decData->tfData->runSbr == 1 &&             /* If zero, we know that no implicit signalling was detected*/
+ //           decData->tfData->sbrPresentFlag != 0 &&     /* If zero, we know no SBR is present.*/
+ //           decData->tfData->sbrPresentFlag != 1 &&     /* If one , we know for sure SBR is present, and already set up the output correctly.*/
+ //           reInitAudioOutput) {
+ //
+ //           /* check sampling frequency just for AAC_LC and AAC_SCAL ( other aot are not supported at the moment ) */
+ //           /* 20070326 BSAC Ext.*/
+ //           if ((decData->frameData->scalOutObjectType == AAC_LC) || (decData->frameData->scalOutObjectType == AAC_SCAL) || (decData->frameData->scalOutObjectType == ER_BSAC)) {
+ //               /* 20070326 BSAC Ext.*/
+ //
+ //                 /* get current output sampling frequency */
+ //               float outputSamplingFreq = AudioGetSamplingFreq(audioFile);
+ //
+ //               /* calculate favoured output sbr frequency */
+ //               float sbrSamplingFreq;
+ //
+ //               if (decData->tfData->bDownSampleSbr) {
+ //                   sbrSamplingFreq = (float)prog->decoderConfig[suitableTracks - 1].audioSpecificConfig.samplingFrequency.value;
+ //               }
+ //               else {
+ //                   sbrSamplingFreq = (float)prog->decoderConfig[suitableTracks - 1].audioSpecificConfig.samplingFrequency.value * 2;
+ //               }
+ //
+ //
+ //               if (outputSamplingFreq != sbrSamplingFreq) {
+ //
+ //                   reInitAudioOutput = 0;
+ //
+ //                   /* reinit audio writeout */
+ //                   AudioClose(audioFile);
+ //                   if (monoFilesOut == 0) {
+ //                       audioFile = AudioOpenWrite(audioFileName,
+ //                           audioFileFormat,
+ //                           channelNum,
+ //                           sbrSamplingFreq,
+ //                           int24flag);
+ //                   }
+ //                   else if (decData->frameData->scalOutObjectType == ER_BSAC) {
+ //                       audioFile = AudioOpenWriteMC_BSAC(audioFileName,
+ //                           audioFileFormat,
+ //                           sbrSamplingFreq,
+ //                           int24flag,
+ //                           numFC,
+ //                           fCenter,
+ //                           numSC,
+ //                           bCenter,
+ //                           numBC,
+ //                           numLFE);
+ //                   }
+ //                   else {
+ //                       audioFile = AudioOpenWriteMC(audioFileName,
+ //                           audioFileFormat,
+ //                           sbrSamplingFreq,
+ //                           int24flag,
+ //                           numFC,
+ //                           fCenter,
+ //                           numSC,
+ //                           bCenter,
+ //                           numBC,
+ //                           numLFE);
+ //                   }
+ //               }
+ //           }
+ //       }
+ //   }
+#endif
+
+
+//if (ELST_MODE_CORE_LEVEL == elstInfoModeLevel)
+//{
+//    int writeoutOn = 0;
+//
+//#ifdef I2R_LOSSLESS
+//    if ((decData->frameData->scalOutObjectType == SLS) || (decData->frameData->scalOutObjectType == SLS_NCORE)) {
+//        if (framesDone > 1) {
+//            writeoutOn = 1;      /* for SLS skip 1st 2 frames (to chk why?) */
+//        }
+//    }
+//    else
+//#endif
+//    {
+//        writeoutOn = 1;      /* normally write out all frames */
+//    }
+//
+//    if (writeoutOn == 1) {
+//        long skipSamples = 0;
+//
+//        if (useEditlist[0]) {
+//            if (numOutSamples < startOffsetInSamples[0]) {
+//                skipSamples = numOutSamples;
+//            }
+//            else {
+//                skipSamples = startOffsetInSamples[0];
+//
+//                if (numOutSamples > playTimeInSamples[0]) {
+//                    numOutSamples = playTimeInSamples[0];
+//                }
+//            }
+//
+//            startOffsetInSamples[0] -= skipSamples;
+//            playTimeInSamples[0] -= (numOutSamples - skipSamples);
+//        }
+//
+//        if (decData->frameData->scalOutObjectType == USAC) {
+//            AudioWriteDataTruncat(audioFile, outSamples, numOutSamples, skipSamples);
+//        }
+//        else {
+//            AudioWriteData(audioFile, outSamples, numOutSamples, skipSamples);
+//        }
+//    }
+//}
+//else {
+//    if (decData->frameData->scalOutObjectType == USAC) {
+//        AudioWriteDataTruncat(audioFile, outSamples, numOutSamples, 0);
+//    }
+//    else {
+//        AudioWriteData(audioFile, outSamples, numOutSamples, 0);
+//    }
+//}
+// 
+    if (ctx->decData->frameData->scalOutObjectType == USAC) {
+        AudioWriteDataTruncat(ctx->audioFile, outSamples, numOutSamples, 0);
+    }
+
+    ctx->framesDone = ctx->framesDone + 1;
+
+
+#ifdef DEBUGPLOT
+    framePlot++;
+    plotDisplay(0);
+#endif
+    if (ctx->verboseLevel > 0) {
+        fprintf(stdout, "Decoding frame %3d\n", ctx->framesDone);
+    }
+
+ //  if (ELST_MODE_EXTERN_LEVEL == elstInfoModeLevel) {
+ //      setElstInfo(elstInfo,
+ //          startOffset[0],
+ //          durationTotal[0],
+ //          numOutSamples,
+ //          framesDone,
+ //          fSampleOut,
+ //          useEditlist[0]);
+ //  }
+ //
+ //  if (verboseLevel > 0) {
+ //      if ((frameCntAudioPreRoll > 0) && (0 == discardAudioPreRoll)) {
+ //          fprintf(stdout, "Finished - (%d frames + %d Audio Pre-Roll frames)\n", frameCnt++, frameCntAudioPreRoll++);
+ //      }
+ //      else {
+ //          fprintf(stdout, "Finished - (%d frames)\n\n", frameCnt++);
+ //      }
+ //  }
+ //
+ //  /* transport MPEG-D DRC data */
+ //  if (decData->usacData != NULL) {
+ //      drcInfo->uniDrc_extEle_present = decData->usacData->drcInfo.uniDrc_extEle_present;
+ //      drcInfo->loudnessInfo_configExt_present = decData->usacData->drcInfo.loudnessInfo_configExt_present;
+ //      drcInfo->frameLength = decData->usacData->drcInfo.frameLength;
+ //      drcInfo->sbr_active = decData->usacData->drcInfo.sbr_active;
+ //  }
+
+}
+
+int xheaacd_delete(decode_obj* ctx) {
+    audioDecFree(ctx->decData, ctx->hFault);
+    free(ctx->decData);
+    free(ctx->decDebugData);
+    if (ctx->audioFile) {
+        AudioClose(ctx->audioFile);
+    }
+    if (ctx->stream) {
+        StreamFileClose(ctx->stream);
+    }
+}
+
+
 
 
 /* ###################################################################### */
@@ -1807,6 +2620,9 @@ bail:
 int main() {
     decode_para dec_para;
     decode_obj* ctx;
+    HANDLE_STREAM_AU au;
+    void* audioframe;
+    int i_bytes_to_read;
 
     memset(&dec_para, 0, sizeof(decode_para));
     dec_para.bitrate = AUDIO_BITRATE;
@@ -1818,6 +2634,12 @@ int main() {
     dec_para.Super_frame_mode = AUDIO_SUPERFRAME;
 
     ctx = xheaacd_create(&dec_para);
+
+    while (1) {
+        xheaacd_decode_frame(ctx, audioframe, i_bytes_to_read);
+    }
+
+
 }
 
 #endif

@@ -215,6 +215,8 @@ struct encode_obj_ {
     AudioFile* audioFile;
     HANDLE_STREAMFILE outfile;
     long fSampleLong;
+
+    int usac212enable;
 };
 
 
@@ -2490,6 +2492,7 @@ encode_obj* xheaace_create(encode_para* encode_para) {
 
     ctx->input_file_flag = encode_para->input_file_flag;
     ctx->output_file_flag = encode_para->output_file_flag;
+    ctx->usac212enable = usac212enable;
 
 }
 
@@ -2561,8 +2564,71 @@ int xheaace_encode_frame(encode_obj* ctx, const unsigned char* raw_pcm_frame, un
         //numSample /= osf;
     }
 
+    if (classfyData.isSwitchMode) {
+        int di;
+        for (di = 0; di < numSample; di++) {
+            classfyData.input_samples[classfyData.n_buffer_samples + di] = ctx->sampleBufRS[0][di];
+        }
+        classfyData.n_buffer_samples += numSample;
+        classification(&classfyData);
+    }
+
+
     if (ctx->sbrenable) {
         int nChannelsResamp = ctx->numChannel;
+
+
+        if (ctx->usac212enable) {
+            float inputBuffer[2 * MAX_BUFFER_SIZE];
+            float downmixBuffer[2 * MAX_BUFFER_SIZE];
+            Stream bitstream;
+            HANDLE_SPATIAL_ENC enc = EncUsac_getSpatialEnc(*ctx->frameData.enc_data);
+            int indepFlagOffset = enc->nBitstreamDelayBuffer - 1;
+            unsigned char* databuf;
+            int i, j;
+            int size;
+            int nchDmx = enc->outputChannels;
+
+            InitStream(&bitstream, NULL, STREAM_WRITE);
+
+            for (i = 0; i < MAX_BUFFER_SIZE; i++) {
+                for (j = 0; j < ctx->numChannel; j++) {
+                    /* ote is NcoefUS a mistake for SBR 2:1 and 4:1 */
+                    if (i < ctx->downSampleRatio * ctx->frameNumSample + ctx->NcoefUS) {
+                        inputBuffer[i * ctx->numChannel + j] = ctx->sampleBufRS[j][i];
+                    }
+                    else {
+                        inputBuffer[i * ctx->numChannel + j] = 0.0f;
+                    }
+                }
+            }
+
+            SpatialEncApply(enc, inputBuffer, downmixBuffer, &bitstream, EncUsac_getIndependencyFlag(*ctx->frameData.enc_data, 0));
+
+            size = GetBitsInStream(&bitstream);
+
+            ByteAlignWrite(&bitstream);
+
+            databuf = bitstream.buffer;
+
+            EncUsac_setSpatialData(*ctx->frameData.enc_data, databuf, size);
+
+            /* downmix signal */
+            if (nchDmx == 2) {
+                float inv_sqrt2 = (float)(1.0 / sqrt(2.0));
+                for (i = 0; i < 2 * ctx->frameNumSample; i++) {
+                    float tmp = inv_sqrt2 * (downmixBuffer[2 * i] - downmixBuffer[2 * i + 1]);
+                    downmixBuffer[2 * i] = inv_sqrt2 * (downmixBuffer[2 * i] + downmixBuffer[2 * i + 1]);
+                    downmixBuffer[2 * i + 1] = tmp;
+                }
+            }
+
+            for (i = 0; i < ctx->downSampleRatio * ctx->frameNumSample / ctx->upSampleRatio; i++)
+                for (ch = 0; ch < nchDmx; ch++)
+                    ctx->sampleBufRS[ch][i] = downmixBuffer[nchDmx * i + ch];
+
+            nChannelsResamp = nchDmx;
+        }
 
         if (ctx->upSampleRatio > 1) {
             for (i = 0; i < ctx->downSampleRatio * ctx->frameNumSample / ctx->upSampleRatio; i++)

@@ -80,7 +80,7 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>..\..\..\..\..\libmpeg\bin</OutDir>
+    <OutDir>..\..\..\..\..\Test\x64\Debug</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)_$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>

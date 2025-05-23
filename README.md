@@ -290,8 +290,33 @@ if (0 == StreamFileGetEditlist(prog, trackIdx, &tmpStart, &tmpDuration)) {
     }
 }
 ```
-注意到这里将`tmpDuration`赋值给`durationTotal[trackIdx]`,在后续对照考虑
+- 注意到这里将`tmpDuration`赋值给`durationTotal[trackIdx]`,在后续对照考虑
+
+- 注意`fileOpened=1;`和`audioFile`;
 
 
 
- 
+#### 通过输入参数对`inputAUs[track]`进行赋值即可
+
+- ` err = StreamGetAccessUnit( prog, firstTrackInLayer+track, inputAUs[track] );`
+- 从文件中获取待编码数据地址和比特大小，并将其存入inputAUs[track]中
+
+- `frameDataAddAccessUnit(decData, decoderAUs[track], tracksForDecoder+track);`
+用于更新输入的待编码比特流，里面仅仅设涉及 `decData->frameData->layer[idx].NoAUInBuffer`的内容，比较方便修改。
+
+`BsGetBufferAppend(bs, AUBuffer, 1, unitSize*8);`
+
+prog->programData->status
+prog->programData->timeThisFrame
+buffer_sim
+
+
+- `fixed_stream = BsOpenBufferRead (frameData->layer[0].bitBuf);`
+用于读取待编码比特流，其中`frameData->layer[0].bitBuf`包含待编码比特流的地址和比特数，而`size`是一个定值
+
+
+
+decData->frameData->od->ESDescriptor[0]->ALConfigDescriptor在从初始化函数跳转到编码函数时，会发生改变
+
+在后面
+layer->AUPaddingBits应该为1

@@ -31,8 +31,6 @@ extern "C" {
 
     LIBXAACENC_API int xheaace_delete(encode_obj* ctx, const char* encoded_file);
 
-    LIBXAACENC_API int xheaace_delete(encode_obj* ctx, const char* encoded_file);
-
     LIBXAACENC_API signed int xheaace_get_frame_count(encode_obj* pv_encode_obj);
 
 #ifdef __cplusplus
