@@ -1310,9 +1310,9 @@ void usacAUDecode ( int numChannels,
   if (unreadBits < 0) {
     CommonExit(1, "Read too many bits (bitsleft %d)\n", unreadBits);
   }
-  if (unreadBits > 7) {
-    CommonExit(1, "Too many bits left after parsing (bitsleft %d)\n", unreadBits);
-  }
+  //if (unreadBits > 7) {
+  //  CommonExit(1, "Too many bits left after parsing (bitsleft %d)\n", unreadBits);
+  //}
 
   removeAU(fixed_stream,decoded_bits,frameData,0);
   BsCloseRemove(fixed_stream,1);

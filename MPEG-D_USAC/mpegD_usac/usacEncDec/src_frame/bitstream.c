@@ -176,7 +176,7 @@ typedef struct tagEscInstanceData {
 static int  BSdebugLevel  = 0;                  /* debug level */
 static int  BSaacEOF      = 0;
 static long BSbufSizeByte = MIN_FILE_BUF_SIZE;  /* num bytes file buf */
-static long BSstreamId    = 0;                  /* stream id counter */
+static long BSstreamId    = 2;                  /* stream id counter */
 static int  BSerrorCount  = 0;
 
 static int  assignmentScheme = 0;          /* bitstream element identifier */
