@@ -223,7 +223,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX64</TargetMachine>
-      <ImportLibrary>$(OutDir)..\lib\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <AdditionalOptions>/NOEXP %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Bscmake>
