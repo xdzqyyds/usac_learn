@@ -309,7 +309,7 @@ if (0 == StreamFileGetEditlist(prog, trackIdx, &tmpStart, &tmpDuration)) {
 
 
 
-#### 通过输入参数对`inputAUs[track]`进行赋值即可
+#### 通过输入参数对`inputAUs[track]`进行赋值即可 已完成
 
 - ` err = StreamGetAccessUnit( prog, firstTrackInLayer+track, inputAUs[track] );`
 - 从文件中获取待编码数据地址和比特大小，并将其存入inputAUs[track]中
@@ -333,3 +333,147 @@ decData->frameData->od->ESDescriptor[0]->ALConfigDescriptor在从初始化函数
 
 在后面
 layer->AUPaddingBits应该为1
+
+
+
+2025.5.26
+#### pcm_f32le 转换为 pcm_s16le 已完成
+```
+    audioDecFrame(ctx->decData,
+        ctx->hFault,
+        &outSamples,
+        &numOutSamples,
+        &ctx->numChannelOut);
+```
+
+该函数是解码函数，将解码结果以`float** outSamples`存储
+
+
+```AudioWriteDataTruncat(ctx->audioFile, outSamples, numOutSamples, 0);```
+该函数是写入函数，将`float** outSamples`的裸码流写入到音频文件中
+
+
+现在我希望将解码结果以`float** outSamples`存储转换为`int16_t** outSamples`存储，这样就能实现`pcm_f32le` 转换为 `pcm_s16le`并写入到音频文件中
+因此需要你将`float**`转换为`int16_t**`，并编写新的`AudioWriteDataTruncat`函数用于将`int16_t** outSamples`写入到音频文件中
+
+其中`AudioWriteDataTruncat`函数内容如下......
+
+
+头文件写入步骤
+`AudioOpenWrite -> AuOpenWrite -> writeWaveHeader`
+
+通过上述过程询问AI进行相应修改后，发现在转换没有问题，但是在头文件的写入时出现了问题
+`audio.c`中有
+```
+/* make it global */
+int bWriteIEEEFloat = 0;
+```
+将其改为0后，即可编写正确的.wav头文件，也就能够实现 `pcm_f32le 到 pcm_s16le`的转换了。
+
+
+
+#### 分辨率和通道数的挡位读取简化   已放弃
+
+目前，我在解码器进行初始化，是通过读取预先生成的mp4头，其中只包含了一帧，该头的作用是完成正确的初始化，方便后续对我指定的文件进行解码操作
+
+但是现在，该方法面临一个问题，我的初始化操作部分源码如下,即我必须将这些.mp4文件放在项目目录下，才可以进行初始化操作
+
+但是我最终目的是将包含初始化在内的一个大函数打包为.dll格式，这就意味着.dll文件同目录下要存在这些.mp4文件，这样显然是不合理的，因此我需要将初始化部分进行简化，使得不需要这些.mp4文件，也能完成初始化操作
+
+
+
+```
+    if (decode_para->bitrate >= 64000) {
+        if (decode_para->num_chan == 1) {
+            switch (decode_para->samp_freq)
+            {
+            case 48000: argv[2] = "sequence/64/48000_1.mp4"; break;
+            case 44100: argv[2] = "sequence/64/44100_1.mp4"; break;
+            case 32000: argv[2] = "sequence/64/32000_1.mp4"; break;
+            default:
+                break;
+            }
+        }
+        else {
+            switch (decode_para->samp_freq)
+            {
+            case 48000: argv[2] = "sequence/64/48000_2.mp4"; break;
+            case 44100: argv[2] = "sequence/64/44100_2.mp4"; break;
+            case 32000: argv[2] = "sequence/64/32000_2.mp4"; break;
+            default:
+                break;
+            }
+        }
+   
+    }
+    else {
+        if (decode_para->num_chan == 1) {
+            switch (decode_para->samp_freq)
+            {
+            case 48000: argv[2] = "sequence/20/48000_1.mp4"; break;
+            case 44100: argv[2] = "sequence/20/44100_1.mp4"; break;
+            case 32000: argv[2] = "sequence/20/32000_1.mp4"; break;
+            default:
+                break;
+            }
+        }
+        else {
+            switch (decode_para->samp_freq)
+            {
+            case 48000: argv[2] = "sequence/20/48000_2.mp4"; break;
+            case 44100: argv[2] = "sequence/20/44100_2.mp4"; break;
+            case 32000: argv[2] = "sequence/20/32000_2.mp4"; break;
+            default:
+                break;
+            }
+        }
+
+    }
+```
+
+
+思路：将.mp4文件转换为字节数组，内嵌到代码中
+利用python，将sequence文件夹下的.mp4文件转换为字节数组，
+例如sequence/64/48000_1.mp4转换为
+```
+unsigned char sequence_64_48000_1_mp4[] = {
+    
+}
+```
+sequence/20/48000_1.mp4转换为
+```
+unsigned char sequence_20_48000_1_mp4[] = {
+    
+}
+```
+遍历所有的.mp4文件，并将上述转换后的字节数组存入至bytes.txt文件中，供我复制
+上述转换为内嵌字节数组的步骤已经完成
+
+
+
+在源码中argv指定文件目录后，是通过下面进行处理的
+```
+    if (!strcmp(argv[i], "-if")) {                                /* Required */
+      strncpy(mp4_InputFile, argv[++i], FILENAME_MAX) ;
+      required++;
+      continue;
+    }
+```
+但是在后续内容中发现
+```
+  sf->fileName = filename;
+```
+这说明后续的操作都是通过文件路径进行访问的，因此我获得的字节数组暂时是无法使用的
+
+替代解决方案：写临时文件 + 内嵌资源 + 自动清理（未用，比较麻烦）
+
+
+#### 通过Enigma Virtual Box（EVB）  进行挡位读取简化和打包
+Enigma Virtual Box（EVB）可以将 .mp4 头文件夹直接打包进 .dll 或 .exe 内部，并且程序可以像读取真实磁盘文件一样使用它们。这是一种虚拟文件系统（VFS）方式，它不需要你自己手动写入临时文件，只需像之前一样传路径即可。（待测试）
+
+
+
+
+测试
+48k 2            24k
+44.1k 2          

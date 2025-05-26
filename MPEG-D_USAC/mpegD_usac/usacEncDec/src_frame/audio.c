@@ -73,6 +73,7 @@ Changes:
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdint.h>
 
 #ifdef USE_AFSP
 #define AFSP_READ
@@ -113,7 +114,7 @@ Changes:
 #endif
 
 /* make it global */
-int bWriteIEEEFloat = 1;
+int bWriteIEEEFloat = 0;
 
 /*static	char*          output_format     = "raw";
 static	unsigned short output_channels   = 1;
@@ -1148,6 +1149,50 @@ void AudioWriteData (
   }
 
   file->currentSample += tot/file->numChannel;
+}
+
+void AudioWriteDataTruncatInt16(
+    AudioFile* file,
+    int16_t** data,
+    long numSample,
+    long skipSample
+) {
+    long tot, cur, num;
+    long i;
+    short bufs[SAMPLE_BUF_SIZE];
+
+    if (AUdebugLevel >= 2)
+        printf("AudioWriteDataInt16: numSample=%ld (currentSample=%ld)\n", numSample, file->currentSample);
+
+    if (file->write != 1)
+        CommonExit(1, "AudioWriteDataInt16: audio file not in write mode");
+
+    tot = file->numChannel * numSample;
+    cur = max(0, -file->numChannel * file->currentSample) + skipSample * file->numChannel;
+
+    while (cur < tot) {
+        num = min(tot - cur, SAMPLE_BUF_SIZE);
+
+        if (file->numC) {
+            // 处理多通道单独写入不同文件的情况（根据需求调整或报错）
+            CommonExit(1, "Multi-channel separate files not supported for int16 format");
+        }
+        else {
+            if (file->stream) {
+                // 按交织顺序填充缓冲区
+                for (i = 0; i < num; i++) {
+                    int channel = (cur + i) % file->numChannel;
+                    long sampleIdx = (cur + i) / file->numChannel;
+                    bufs[i] = (short)data[channel][sampleIdx];
+                }
+                AuWriteData(file->stream, bufs, num);
+            }
+        }
+
+        cur += num;
+    }
+
+    file->currentSample += tot / file->numChannel;
 }
 
 /* no rounding from float to short, just truncation! */

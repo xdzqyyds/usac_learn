@@ -101,6 +101,7 @@ Changes:
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -1647,6 +1648,41 @@ freeMem:
     return retVal;
 }
 
+int16_t** ConvertFloatToInt16(float** floatData, int numChannels, long numSamples) {
+    int c = 0;
+    long s = 0;
+    int i = 0;
+    float sample;
+    int16_t** intData = (int16_t**)malloc(numChannels * sizeof(int16_t*));
+    if (!intData) return NULL;
+
+    for (c = 0; c < numChannels; c++) {
+        intData[c] = (int16_t*)malloc(numSamples * sizeof(int16_t));
+        if (!intData[c]) {
+            // �����ڴ����ʧ��
+            for (i = 0; i < c; i++) free(intData[i]);
+            free(intData);
+            return NULL;
+        }
+
+        for (s = 0; s < numSamples; s++) {
+            sample = floatData[c][s];
+            // ���ʹ�����ת��
+            if (sample > 32767.0f) {
+                intData[c][s] = 32767;
+            }
+            else if (sample < -32768.0f) {
+                intData[c][s] = -32768;
+            }
+            else {
+                intData[c][s] = (int16_t)((sample >= 0) ? (sample + 0.5f) : (sample - 0.5f));
+            }
+        }
+    }
+    return intData;
+}
+
+
 decode_obj* xheaacd_create(decode_para* decode_para) {
     int argc = 11;
     char* argv[] = {
@@ -2084,6 +2120,7 @@ bail:
 
 int xheaacd_decode_frame(decode_obj* ctx, void* audioframe, int i_bytes_to_read) {
     float** outSamples;
+    int16_t** int16Samples;
     long  numOutSamples;
     int nAudioPreRollSamplesWrittenPerChannel = 0;
     int frameCntAudioPreRoll = 0;
@@ -2343,7 +2380,9 @@ int xheaacd_decode_frame(decode_obj* ctx, void* audioframe, int i_bytes_to_read)
         &numOutSamples,
         &ctx->numChannelOut);
     
-    ch0 = outSamples[0];
+
+    int16Samples = ConvertFloatToInt16(outSamples, ctx->numChannelOut, numOutSamples);
+    ch0 = int16Samples[0];
 
 //   if (numChannelOut != decData->frameData->scalOutNumChannels && firstDecdoeFrame)
 //   {
@@ -2540,7 +2579,8 @@ int xheaacd_decode_frame(decode_obj* ctx, void* audioframe, int i_bytes_to_read)
 //}
 // 
     if (ctx->decData->frameData->scalOutObjectType == USAC) {
-        AudioWriteDataTruncat(ctx->audioFile, outSamples, numOutSamples, 0);
+        //AudioWriteDataTruncat(ctx->audioFile, outSamples, numOutSamples, 0);
+        AudioWriteDataTruncatInt16(ctx->audioFile, int16Samples, numOutSamples, 0);
     }
 
     ctx->framesDone = ctx->framesDone + 1;
