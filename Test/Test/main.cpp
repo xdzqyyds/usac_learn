@@ -33,7 +33,7 @@ long find_data_chunk(FILE* wav_file) {
 
 
 
-#define AUDIO_BITRATE        64000
+#define AUDIO_BITRATE        24000
 #define AUDIO_SAMPLE_RATE    44100
 #define AUDIO_CHANNELS       2
 #define AUDIO_PCM_WIDTH      16
@@ -46,7 +46,7 @@ long find_data_chunk(FILE* wav_file) {
 
 
 
-#define Super_frame_enabled 0
+#define Super_frame_enabled 1
 
 
 int main() {
@@ -100,6 +100,8 @@ int main() {
         return 1;
     }
 
+    int16_t* pcm_data = NULL;
+    int pcm_samples = 0;
     int mm = 0;
 
     fseek(input_wav_file, data_offset, SEEK_SET);
@@ -125,7 +127,7 @@ int main() {
                 while (offset < total_size && i < 17) {
                     if (frame_sizes[i] > 0) {
                         /*decoded audio frame*/
-                        xheaacd_decode_frame(decoder, audio_frame + offset, frame_sizes[i]);
+                        xheaacd_decode_frame(decoder, audio_frame + offset, frame_sizes[i], &pcm_data, &pcm_samples);
                         /*audio player, The input data is "decoder->pb_out_buf" ,the size is "Handle_frame_length"*/
                     }
                     offset += frame_sizes[i];
@@ -134,7 +136,10 @@ int main() {
             }
 #else
             if (encoded_size > 0) {
-                xheaacd_decode_frame(decoder, encoded_data, encoded_size);
+                xheaacd_decode_frame(decoder, encoded_data, encoded_size, &pcm_data, &pcm_samples);
+                for (int i = 0; i < 10; i++) {
+                    printf("Sample[%d]: %d\n", i, pcm_data[i]);
+                }
             }
 #endif 
         }
@@ -142,7 +147,6 @@ int main() {
         fflush(stdout);
         i++;
     }
-
     free(encoded_data);
     free(superframe_output);
     xheaace_delete(ctx, encoded_wav_path);

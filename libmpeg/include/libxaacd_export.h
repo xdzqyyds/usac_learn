@@ -26,7 +26,7 @@ extern "C" {
 
     LIBXAACDEC_API decode_obj* xheaacd_create(decode_para* decode_para);
     
-    LIBXAACDEC_API int xheaacd_decode_frame(decode_obj* ctx, void* audioframe, int i_bytes_to_read);
+    LIBXAACDEC_API int xheaacd_decode_frame(decode_obj* ctx, void* audioframe, int i_bytes_to_read, int16_t** pcm_buffer, int* pcm_samples);
 
     LIBXAACDEC_API int xheaacd_delete(decode_obj* ctx);
 

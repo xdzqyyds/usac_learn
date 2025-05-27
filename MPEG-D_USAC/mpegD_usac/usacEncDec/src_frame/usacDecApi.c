@@ -2118,7 +2118,7 @@ bail:
 
 }
 
-int xheaacd_decode_frame(decode_obj* ctx, void* audioframe, int i_bytes_to_read) {
+int xheaacd_decode_frame(decode_obj* ctx, void* audioframe, int i_bytes_to_read, int16_t** pcm_buffer, int* pcm_samples) {
     float** outSamples;
     int16_t** int16Samples;
     long  numOutSamples;
@@ -2128,6 +2128,7 @@ int xheaacd_decode_frame(decode_obj* ctx, void* audioframe, int i_bytes_to_read)
 
     float* ch0;
     int streamID = -1;
+    int s, i, c;
 
     char buffer_empty = 0;
     int tracksForDecoder;
@@ -2383,6 +2384,23 @@ int xheaacd_decode_frame(decode_obj* ctx, void* audioframe, int i_bytes_to_read)
 
     int16Samples = ConvertFloatToInt16(outSamples, ctx->numChannelOut, numOutSamples);
     ch0 = int16Samples[0];
+    if (pcm_buffer && pcm_samples) {
+        const size_t total_samples = ctx->numChannelOut * numOutSamples;
+
+        *pcm_buffer = (int16_t*)malloc(total_samples * sizeof(int16_t));
+        if (!*pcm_buffer) {
+            return -1;
+        }
+
+        for (s = 0; s < numOutSamples; s++) {
+            for (c = 0; c < ctx->numChannelOut; c++) {
+                (*pcm_buffer)[s * ctx->numChannelOut + c] = int16Samples[c][s];
+            }
+        }
+
+        *pcm_samples = total_samples;
+    }
+
 
 //   if (numChannelOut != decData->frameData->scalOutNumChannels && firstDecdoeFrame)
 //   {
@@ -2583,6 +2601,11 @@ int xheaacd_decode_frame(decode_obj* ctx, void* audioframe, int i_bytes_to_read)
         AudioWriteDataTruncatInt16(ctx->audioFile, int16Samples, numOutSamples, 0);
     }
 
+    for (c = 0; c < ctx->numChannelOut; c++) {
+        free(int16Samples[c]);
+    }
+    free(int16Samples);
+
     ctx->framesDone = ctx->framesDone + 1;
 
 
@@ -2593,6 +2616,8 @@ int xheaacd_decode_frame(decode_obj* ctx, void* audioframe, int i_bytes_to_read)
     if (ctx->verboseLevel > 0) {
         fprintf(stdout, "Decoding frame %3d\n", ctx->framesDone);
     }
+
+    return 0;
 
  //  if (ELST_MODE_EXTERN_LEVEL == elstInfoModeLevel) {
  //      setElstInfo(elstInfo,
@@ -2676,7 +2701,7 @@ int main() {
     ctx = xheaacd_create(&dec_para);
 
     while (1) {
-        xheaacd_decode_frame(ctx, audioframe, i_bytes_to_read);
+        //xheaacd_decode_frame(ctx, audioframe, i_bytes_to_read);
     }
 
 

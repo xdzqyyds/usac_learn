@@ -474,6 +474,8 @@ Enigma Virtual Box（EVB）可以将 .mp4 头文件夹直接打包进 .dll 或 .
 
 
 
-测试
-48k 2            24k
-44.1k 2          
+#### 打包过程
+
+在编码端，在release中
+启用多线程 DLL (/MD)时，在点击stop时程序会卡死退出
+而启用多线程调试 DLL (/MDd)时，在点击stop时程序会正常退出
