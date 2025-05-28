@@ -2101,6 +2101,8 @@ encode_obj* xheaace_create(encode_para* encode_para) {
                 "(maybe unknown format)",
                 audioFileName);
     } else {
+        audioFile = AudioOpenRead(audioFileName, &numChannel, &fSample,
+            &fileNumSample);
         audioFile = (AudioFile*)calloc(1, sizeof(AudioFile));
         if (!audioFile) {
             CommonExit(1, "Encode: error opening audio file %s "
@@ -2709,11 +2711,16 @@ int xheaace_encode_frame(encode_obj* ctx, const unsigned char* raw_pcm_frame, un
 
             *out_encoded_data = (unsigned char*)malloc(byte_size);
             memcpy(*out_encoded_data, au->data, byte_size);
-            if (au->numBits % 8 != 0) {
-                uint8_t mask = 0xFF >> (8 - (au->numBits % 8));
-                (*out_encoded_data)[byte_size - 1] &= mask;
-            }
+            //if (au->numBits % 8 != 0) {
+            //    uint8_t mask = 0xFF >> (8 - (au->numBits % 8));
+            //    (*out_encoded_data)[byte_size - 1] &= mask;
+            //}
+            
             *out_encoded_size = byte_size;
+
+            //*out_encoded_size = au->numBits;
+            //*out_encoded_data = (unsigned char*)malloc(byte_size);
+            //memcpy(*out_encoded_data, au->data, byte_size);
 
             switch (usacSyncState) {
             case USAC_SYNCFRAME_IMMEDIATE_PLAY_OUT_FRAME:
@@ -2904,7 +2911,7 @@ signed int xheaace_get_frame_count(encode_obj* ctx) {
 /* ##                 MPEG USAC encoder API functions               ## */
 /* ###################################################################### */
 
-#define AUDIO_BITRATE        64000
+#define AUDIO_BITRATE        20000
 #define AUDIO_SAMPLE_RATE    44100
 #define AUDIO_CHANNELS       2
 #define AUDIO_PCM_WIDTH      16
@@ -2951,7 +2958,7 @@ int main() {
 
     fseek(input_wav_file, data_offset, SEEK_SET);
 
-    while (i < 600) {
+    while (i < 4544) {
         fread(buffer, 1, Handle_frame_length, input_wav_file);
         if (xheaace_encode_frame(ctx, buffer, &encoded_data, &encoded_size) == 1) {
             if (encode_superframe(super_ctx, encoded_data, encoded_size, superframe_output) == 1) {
@@ -2964,7 +2971,6 @@ int main() {
         i++;
     }
 
-    free(encoded_data);
     free(superframe_output);
     xheaace_delete(ctx, encoded_wav_path);
     destroy_superframe_encoder(super_ctx);

@@ -33,9 +33,9 @@ long find_data_chunk(FILE* wav_file) {
 
 
 
-#define AUDIO_BITRATE        24000
-#define AUDIO_SAMPLE_RATE    44100
-#define AUDIO_CHANNELS       2
+#define AUDIO_BITRATE        12000
+#define AUDIO_SAMPLE_RATE    32000
+#define AUDIO_CHANNELS       1
 #define AUDIO_PCM_WIDTH      16
 #define AUDIO_SBR_FLAG       1
 #define AUDIO_MPS_FLAG       0
@@ -46,11 +46,11 @@ long find_data_chunk(FILE* wav_file) {
 
 
 
-#define Super_frame_enabled 1
+#define Super_frame_enabled 0
 
 
 int main() {
-    const char* input_wav_path = "input.wav";
+    const char* input_wav_path = "test_sequence/1/32000.wav";
     const char* encoded_wav_path = "encoded.mp4";
     FILE* input_wav_file = fopen(input_wav_path, "rb");
     FILE* encoded_wav_file = NULL;
@@ -106,7 +106,7 @@ int main() {
 
     fseek(input_wav_file, data_offset, SEEK_SET);
 
-    while (i < 400) {
+    while (i < 4544) {
         fread(buffer, 1, Handle_frame_length, input_wav_file);
         if (xheaace_encode_frame(ctx, buffer, &encoded_data, &encoded_size) == 1) {
 
@@ -122,8 +122,8 @@ int main() {
                 uint8_t* audio_frame = (uint8_t*)decode_superframe(superframe_output, super_decoder, &total_size, frame_sizes);
                 int fff = 0;
 
-                //uint8_t* pcm_buffer = (uint8_t*)malloc(Handle_frame_length * 50);
-                //uint32_t pcm_offset = 0;
+                uint8_t* pcm_buffer = (uint8_t*)malloc(Handle_frame_length * 50);
+                uint32_t pcm_offset = 0;
                 while (offset < total_size && i < 17) {
                     if (frame_sizes[i] > 0) {
                         /*decoded audio frame*/

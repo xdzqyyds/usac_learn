@@ -479,3 +479,86 @@ Enigma Virtual Box（EVB）可以将 .mp4 头文件夹直接打包进 .dll 或 .
 在编码端，在release中
 启用多线程 DLL (/MD)时，在点击stop时程序会卡死退出
 而启用多线程调试 DLL (/MDd)时，在点击stop时程序会正常退出
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2025.5.28
+发现封装后的.dll并未能达到封装前的最低码率，怀疑是封装问题，因此需要详细检查封装
+
+# 对编码端封装验证     （经验证，除头信息外没有任何问题）
+
+- 示范程序 `E:\ISO-IEC-USAC\mpegD_usac\usacEncDec\win32\usacEnc\usacEnc_VS2012.sln`
+- 封装程序 `E:\usac_learn\MPEG-D_USAC\mpegD_usac\usacEncDec\win32\usacEnc\usacEnc_VS2012.sln`
+- 测试程序 `E:\usac_learn\Test\Test.sln`
+- 测试序列 `E:\usac_learn\Test\x64\Debug\input.wav`
+- 测试码率 `20kbps` 
+- 编码帧数 `4544`
+- 对比工具 `E:\BeyondCompare4.2.10.23938\BCompare.exe`
+- 超帧模式 `关闭`
+
+### 以结果为导向
+
+- 考虑使用示范程序和测试程序分别编码`4544`帧数据，并通过对比工具按字节来分析`.mp4`文件的差异
+- 由于字节填充机制是在写入文件之后，因此实际上得到的`.mp4`是未经填充的，正常对比即可
+![alt text](image-2.png)
+
+- 其中`6D 64 61 74`表示`mdat`该信息标志着元数据部分结束、媒体数据部分开始，因此只用对比之后的数据即可
+- 经测试，发现在`mdat`头之前的信息有差别，而在之后的信息中除了最后几帧外没有任何差别
+
+
+# 对解码端封装验证
+
+- 示范程序 `E:\ISO-IEC-USAC\mpegD_usac\usacEncDec\win32\usacDec\usacDec_VS2012.sln`
+- 封装程序 `E:\usac_learn\MPEG-D_USAC\mpegD_usac\usacEncDec\win32\usacDec\usacDec_VS2012.sln`
+- 测试程序 `E:\usac_learn\Test\Test.sln`
+- 测试序列 `E:\usac_learn\Test\x64\Debug\encoded.mp4`
+- 测试码率 `20kbps` 
+- 编码帧数 `4544`
+- 对比工具 `E:\BeyondCompare4.2.10.23938\BCompare.exe`
+- 超帧模式 `关闭`
+
+### 解码端验证过程分析
+
+- 由于解码端封装程序是读取编码后码流来进行解码，而目前这里并没有读取`.mp4``mdat`后媒体数据的函数
+- 同时，示范程序中读取`.mp4`媒体数据的函数存疑，是否应考虑先弄清示范程序中读取`.mp4`媒体数据的函数
+- 经验证，发现测试程序解码端读入的字节与示范程序一致
+
+- `prog->programData->buffer_sim `对比发现未初始化
+
+### 问题解决
+
+- 发现编码端为适配超级帧进行了字节填充的操作，但是原本的函数中已经包含了该功能,后面又通过`if (au->numBits % 8 != 0)`判断再次填充，导致出错。
+```
+            au->numBits = BsBufferNumBit(ctx->au_buffers[i]);
+            au->data = BsBufferGetDataBegin(ctx->au_buffers[i]);
+            encoded_data = (unsigned char*)au->data;
+
+            byte_size = (au->numBits + 7) / 8;
+
+            *out_encoded_data = (unsigned char*)malloc(byte_size);
+            memcpy(*out_encoded_data, au->data, byte_size);
+            //if (au->numBits % 8 != 0) {
+            //    uint8_t mask = 0xFF >> (8 - (au->numBits % 8));
+            //    (*out_encoded_data)[byte_size - 1] &= mask;
+            //}
+            
+            *out_encoded_size = byte_size;
+
+```

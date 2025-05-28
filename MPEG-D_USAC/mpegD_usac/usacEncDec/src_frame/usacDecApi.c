@@ -1812,7 +1812,7 @@ decode_obj* xheaacd_create(decode_para* decode_para) {
                 break;
             }
         }
-   
+    
     }
     else {
         if (decode_para->num_chan == 1) {
@@ -1835,9 +1835,10 @@ decode_obj* xheaacd_create(decode_para* decode_para) {
                 break;
             }
         }
-
+    
     }
 
+    //argv[2] = "encoded/encoded.mp4";
 
 
     /* get version number */
@@ -2172,10 +2173,17 @@ int xheaacd_decode_frame(decode_obj* ctx, void* audioframe, int i_bytes_to_read,
                 //    err = StreamGetAccessUnit(ctx->prog, firstTrackInLayer + track, inputAUs[track]);
                 //    if (err) break;
                 //}
+                
                 inputAUs[0]->numBits = i_bytes_to_read * 8;
+                //inputAUs[0]->numBits = i_bytes_to_read;
                 inputAUs[0]->data = audioframe;
-                ctx->prog->programData->status = STATUS_READING;
-                ctx->prog->programData->timeThisFrame[0] = ctx->prog->programData->timePerAU[0];
+
+                if (ctx->prog->programData->status == STATUS_PREPARE_READ) {
+                    startStreamDiagnose(ctx->prog->fileData);
+                    setStreamStatus(ctx->prog->fileData, STATUS_READING);
+                    ctx->prog->fileData->status = STATUS_READING;
+                }
+
 
                 if (err) break;
 
