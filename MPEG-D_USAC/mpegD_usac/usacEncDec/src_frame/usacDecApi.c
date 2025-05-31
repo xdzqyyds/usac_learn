@@ -1781,64 +1781,25 @@ decode_obj* xheaacd_create(decode_para* decode_para) {
     float fSampleOut = 0.0f;
 
     DRC_APPLY_INFO    drcInfo;
+    static char file_path[128];
+    int bitrate_group = (decode_para->bitrate < 64000) ? 20 : 64;
 
     drcInfo.uniDrc_config_file = tmpFile_Drc_config;
     drcInfo.uniDrc_payload_file = tmpFile_Drc_payload;
     drcInfo.loudnessInfo_config_file = tmpFile_Loudness_config;
 
+    /* select correct mp4_header */
+
+    _snprintf(file_path, sizeof(file_path), "sequence/%d/%d_%d.mp4",
+        bitrate_group,
+        decode_para->samp_freq,
+        decode_para->num_chan);
+    argv[2] = file_path;
+
 
     /* ###################################################################### */
     /* ##                          main function                           ## */
     /* ###################################################################### */
-    /* select correct mp4_header */
-    if (decode_para->bitrate >= 64000) {
-        if (decode_para->num_chan == 1) {
-            switch (decode_para->samp_freq)
-            {
-            case 48000: argv[2] = "sequence/64/48000_1.mp4"; break;
-            case 44100: argv[2] = "sequence/64/44100_1.mp4"; break;
-            case 32000: argv[2] = "sequence/64/32000_1.mp4"; break;
-            default:
-                break;
-            }
-        }
-        else {
-            switch (decode_para->samp_freq)
-            {
-            case 48000: argv[2] = "sequence/64/48000_2.mp4"; break;
-            case 44100: argv[2] = "sequence/64/44100_2.mp4"; break;
-            case 32000: argv[2] = "sequence/64/32000_2.mp4"; break;
-            default:
-                break;
-            }
-        }
-    
-    }
-    else {
-        if (decode_para->num_chan == 1) {
-            switch (decode_para->samp_freq)
-            {
-            case 48000: argv[2] = "sequence/20/48000_1.mp4"; break;
-            case 44100: argv[2] = "sequence/20/44100_1.mp4"; break;
-            case 32000: argv[2] = "sequence/20/32000_1.mp4"; break;
-            default:
-                break;
-            }
-        }
-        else {
-            switch (decode_para->samp_freq)
-            {
-            case 48000: argv[2] = "sequence/20/48000_2.mp4"; break;
-            case 44100: argv[2] = "sequence/20/44100_2.mp4"; break;
-            case 32000: argv[2] = "sequence/20/32000_2.mp4"; break;
-            default:
-                break;
-            }
-        }
-    
-    }
-
-    //argv[2] = "encoded/encoded.mp4";
 
 
     /* get version number */
